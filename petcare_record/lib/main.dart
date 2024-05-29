@@ -44,11 +44,25 @@ class _MyHomePageState extends State<MyHomePage> {
           'Pet Record App',
           style: TextStyle(
             color: PetRecordColor.theme,
-            fontSize: 20,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: PetRecordColor.primary,
+        backgroundColor: PetRecordColor.white,
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            color: PetRecordColor.info,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                spreadRadius: 1,
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+        ),
       ),
       body: IndexedStack(
         index: _selectedIndex,
@@ -59,9 +73,18 @@ class _MyHomePageState extends State<MyHomePage> {
           ProfilePage(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBarWidget(
-        currentIndex: _selectedIndex,
-        onItemSelected: _onItemTapped,
+      bottomNavigationBar: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            height: 0.5,
+            color: Colors.grey[300],
+          ),
+          BottomNavigationBarWidget(
+            currentIndex: _selectedIndex,
+            onItemSelected: _onItemTapped,
+          ),
+        ],
       ),
     );
   }

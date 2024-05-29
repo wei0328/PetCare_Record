@@ -45,6 +45,7 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
       currentIndex: widget.currentIndex,
       selectedItemColor: PetRecordColor.primary,
       unselectedItemColor: PetRecordColor.iconcolor,
+      backgroundColor: PetRecordColor.black,
       onTap: widget.onItemSelected,
     );
   }
