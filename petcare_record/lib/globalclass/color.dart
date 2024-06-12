@@ -4,7 +4,7 @@ class PetRecordColor {
   static const white = Color(0xffFFFFFF);
   static const black = Color(0xff1C1B1B);
   static const transparent = Colors.transparent;
-  static const theme = Color.fromARGB(255, 54, 89, 91);
+  static const theme = Color.fromRGBO(49, 79, 81, 1);
   static const primary = Color(0xFFA7C1C1);
   static const secondary = Color(0xFFD5EEEF);
   static const info = Color(0xFFF4F4F4);

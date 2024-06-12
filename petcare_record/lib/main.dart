@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/pages/login.dart';
 import 'package:petcare_record/pages/diary_page.dart';
 import 'package:petcare_record/pages/profile_page.dart';
 import 'package:petcare_record/pages/my_pets_page.dart';
 import 'package:petcare_record/pages/map_page.dart';
 import 'package:petcare_record/dashboard/bottom_navigation_bar.dart';
 import 'package:get/get.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return GetMaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Pet Record App',
-      home: MyHomePage(),
+    return ScreenUtilInit(
+      designSize: Size(375, 812),
+      builder: (context, child) {
+        return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: Login(),
+        );
+      },
     );
   }
 }
