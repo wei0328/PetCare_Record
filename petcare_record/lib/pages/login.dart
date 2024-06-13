@@ -3,6 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/auth.dart';
+import 'package:petcare_record/pages/signup.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -31,7 +32,7 @@ class _LoginState extends State<Login> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            SizedBox(height: 80.h),
+            SizedBox(height: 150.h),
             Center(
               child: Image.asset(
                 'assets/logo/logo-notext.png',
@@ -107,18 +108,18 @@ class _LoginState extends State<Login> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Dont have an account?  ",
+                  "Don't have an account?  ",
                   style: TextStyle(fontSize: 14),
                 ),
                 InkWell(
                   splashColor: PetRecordColor.transparent,
                   highlightColor: PetRecordColor.transparent,
                   onTap: () {
-                    // Navigator.push(context, MaterialPageRoute(
-                    //   builder: (context) {
-                    //     //return const PetCareSignUp();
-                    //   },
-                    // ));
+                    Navigator.push(context, MaterialPageRoute(
+                      builder: (context) {
+                        return const SignUp();
+                      },
+                    ));
                   },
                   child: Text(
                     "Sign Up",
@@ -127,45 +128,45 @@ class _LoginState extends State<Login> {
                 ),
               ],
             ),
-            SizedBox(height: 30.h),
-            Text('or login with', style: TextStyle(fontSize: 14.sp)),
-            SizedBox(height: 10.h),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    //
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: PetRecordColor.white,
-                    padding: EdgeInsets.all(10),
-                    shape: CircleBorder(
-                      side: BorderSide(color: PetRecordColor.theme),
-                    ),
-                  ),
-                  child: Image.asset(
-                    'assets/icon/gmail.png',
-                    height: 24,
-                    width: 24,
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Implement your onPressed logic here
-                  },
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: Colors.black,
-                    backgroundColor: PetRecordColor.white,
-                    padding: EdgeInsets.all(10),
-                    shape: CircleBorder(
-                      side: BorderSide(color: PetRecordColor.theme),
-                    ),
-                  ),
-                  child: Icon(Icons.apple, size: 24, color: Colors.black),
-                ),
-              ],
-            ),
+            // SizedBox(height: 30.h),
+            // Text('or login with', style: TextStyle(fontSize: 14.sp)),
+            // SizedBox(height: 10.h),
+            // Row(
+            //   mainAxisAlignment: MainAxisAlignment.center,
+            //   children: [
+            //     ElevatedButton(
+            //       onPressed: () {
+            //         //
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         backgroundColor: PetRecordColor.white,
+            //         padding: EdgeInsets.all(10),
+            //         shape: CircleBorder(
+            //           side: BorderSide(color: PetRecordColor.theme),
+            //         ),
+            //       ),
+            //       child: Image.asset(
+            //         'assets/icon/gmail.png',
+            //         height: 24,
+            //         width: 24,
+            //       ),
+            //     ),
+            //     ElevatedButton(
+            //       onPressed: () {
+            //         // Implement your onPressed logic here
+            //       },
+            //       style: ElevatedButton.styleFrom(
+            //         foregroundColor: Colors.black,
+            //         backgroundColor: PetRecordColor.white,
+            //         padding: EdgeInsets.all(10),
+            //         shape: CircleBorder(
+            //           side: BorderSide(color: PetRecordColor.theme),
+            //         ),
+            //       ),
+            //       child: Icon(Icons.apple, size: 24, color: Colors.black),
+            //     ),
+            //   ],
+            // ),
           ],
         ),
       ),
