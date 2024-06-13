@@ -37,11 +37,7 @@ class AuthController extends GetxController {
           'phoneNumber': phoneController.text.trim(),
         });
 
-        Navigator.pushReplacement(context, MaterialPageRoute(
-          builder: (context) {
-            return MyHomePage();
-          },
-        ));
+        Get.offAll(() => MyHomePage());
       }
     } catch (e) {
       isLoading.value = false;
