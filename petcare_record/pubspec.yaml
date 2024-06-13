@@ -66,6 +66,7 @@ flutter:
   assets:
     - assets/logo/logo-notext.png
     - assets/icon/gmail.png
+    - assets/logo/logo_white.png
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
