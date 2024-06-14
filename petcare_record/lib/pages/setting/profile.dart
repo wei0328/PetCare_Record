@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/auth.dart';
+import 'package:petcare_record/pages/auth/login.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);

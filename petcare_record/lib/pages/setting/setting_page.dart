@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/setting/profile.dart';
 
 class SettingPage extends StatefulWidget {
@@ -49,6 +51,48 @@ class _SettingPageState extends State<SettingPage> {
     } catch (e) {
       print('Error getting user data: $e');
     }
+  }
+
+  Future<bool> onbackpressed() async {
+    return await showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: PetRecordColor.white,
+        content: Text(
+          "Are you sure to logout from this app?",
+          style: TextStyle(fontSize: 17),
+        ),
+        actionsAlignment: MainAxisAlignment.center,
+        actions: [
+          ElevatedButton(
+            onPressed: () async {
+              Get.to(() => const Login());
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PetRecordColor.primary,
+              minimumSize: Size(80, 40),
+            ),
+            child: Text(
+              "Yes",
+              style: TextStyle(fontSize: 16, color: PetRecordColor.white),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: PetRecordColor.primary,
+              minimumSize: Size(80, 40),
+            ),
+            child: Text(
+              "No",
+              style: TextStyle(fontSize: 16, color: PetRecordColor.white),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -158,7 +202,7 @@ class _SettingPageState extends State<SettingPage> {
                     leading: Icon(Icons.logout),
                     title: Text('Log Out'),
                     onTap: () {
-                      // Handle log out tap
+                      onbackpressed();
                     },
                   ),
                 ],
