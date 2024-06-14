@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/pages/diary_page.dart';
-import 'package:petcare_record/pages/profile_page.dart';
+import 'package:petcare_record/pages/setting/setting_page.dart';
 import 'package:petcare_record/pages/my_pets_page.dart';
 import 'package:petcare_record/pages/map_page.dart';
 import 'package:petcare_record/globalclass/color.dart';
@@ -38,8 +38,8 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
           label: 'Map',
         ),
         BottomNavigationBarItem(
-          icon: Icon(Icons.person),
-          label: 'Profile',
+          icon: Icon(Icons.settings),
+          label: 'Setting',
         ),
       ],
       currentIndex: widget.currentIndex,

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
-import 'package:petcare_record/pages/login.dart';
+import 'package:petcare_record/pages/auth/login.dart';
 
 class Splash extends StatefulWidget {
   const Splash({super.key});

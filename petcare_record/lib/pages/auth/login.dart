@@ -3,7 +3,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/auth.dart';
-import 'package:petcare_record/pages/signup.dart';
+import 'package:petcare_record/pages/auth/signup.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});

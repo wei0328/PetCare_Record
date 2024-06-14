@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petcare_record/globalclass/color.dart';
-import 'package:petcare_record/pages/login.dart';
+import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/diary_page.dart';
-import 'package:petcare_record/pages/profile_page.dart';
+import 'package:petcare_record/pages/setting/setting_page.dart';
 import 'package:petcare_record/pages/my_pets_page.dart';
 import 'package:petcare_record/pages/map_page.dart';
 import 'package:petcare_record/dashboard/bottom_navigation_bar.dart';
@@ -52,38 +52,13 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Pet Record App',
-          style: TextStyle(
-            color: PetRecordColor.theme,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        backgroundColor: PetRecordColor.white,
-        elevation: 0,
-        flexibleSpace: Container(
-          decoration: BoxDecoration(
-            color: PetRecordColor.info,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.grey.withOpacity(0.5),
-                spreadRadius: 1,
-                blurRadius: 5,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-        ),
-      ),
       body: IndexedStack(
         index: _selectedIndex,
         children: [
           DiaryPage(),
           MyPetsPage(),
           MapPage(),
-          ProfilePage(),
+          SettingPage(),
         ],
       ),
       bottomNavigationBar: Column(
