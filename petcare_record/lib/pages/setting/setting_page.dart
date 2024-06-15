@@ -5,6 +5,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/auth/login.dart';
+import 'package:petcare_record/pages/setting/password.dart';
 import 'package:petcare_record/pages/setting/profile.dart';
 
 class SettingPage extends StatefulWidget {
@@ -13,13 +14,11 @@ class SettingPage extends StatefulWidget {
 }
 
 class _SettingPageState extends State<SettingPage> {
-  // Placeholder for user data, replace with your actual user data source
   String firstName = '';
   String email = '';
   String phoneNumber = '';
   String lastName = '';
-  final String profileImageUrl = 'https://via.placeholder.com/150';
-
+  String profileImageUrl = '';
   @override
   void initState() {
     super.initState();
@@ -41,6 +40,7 @@ class _SettingPageState extends State<SettingPage> {
             firstName = userData['firstName'] ?? '';
             lastName = userData['lastName'] ?? '';
             phoneNumber = userData['phoneNumber'] ?? '';
+            profileImageUrl = userData['profileImageUrl'] ?? '';
           });
         } else {
           print('User document does not exist');
@@ -66,7 +66,7 @@ class _SettingPageState extends State<SettingPage> {
         actions: [
           ElevatedButton(
             onPressed: () async {
-              Get.to(() => const Login());
+              Get.offAll(() => const Login());
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: PetRecordColor.primary,
@@ -114,7 +114,28 @@ class _SettingPageState extends State<SettingPage> {
                     children: [
                       CircleAvatar(
                         radius: 50,
-                        backgroundImage: NetworkImage(profileImageUrl),
+                        backgroundColor: Colors.grey[200],
+                        child: profileImageUrl.isNotEmpty
+                            ? ClipOval(
+                                child: Image.network(
+                                  profileImageUrl,
+                                  fit: BoxFit.cover,
+                                  width: 100,
+                                  height: 100,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Icon(
+                                      Icons.person,
+                                      size: 50,
+                                      color: Colors.grey,
+                                    );
+                                  },
+                                ),
+                              )
+                            : Icon(
+                                Icons.person,
+                                size: 100,
+                                color: Colors.grey,
+                              ),
                       ),
                       Positioned(
                         right: 0,
@@ -153,7 +174,10 @@ class _SettingPageState extends State<SettingPage> {
                 children: [
                   ListTile(
                     leading: Icon(Icons.person),
-                    title: Text('Profile'),
+                    title: Text(
+                      'Profile',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     onTap: () {
                       showModalBottomSheet(
                         context: context,
@@ -176,15 +200,36 @@ class _SettingPageState extends State<SettingPage> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.lock),
-                    title: Text('Password'),
+                    title: Text(
+                      'Password',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     onTap: () {
-                      // Handle password tap
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20.0),
+                              topRight: Radius.circular(20.0),
+                            ),
+                            child: FractionallySizedBox(
+                              heightFactor: 0.8,
+                              child: PasswordPage(),
+                            ),
+                          );
+                        },
+                      );
                     },
                   ),
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.settings),
-                    title: Text('Preferences'),
+                    title: Text(
+                      'Preferences',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     onTap: () {
                       // Handle preferences tap
                     },
@@ -192,7 +237,10 @@ class _SettingPageState extends State<SettingPage> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.notifications),
-                    title: Text('Notification'),
+                    title: Text(
+                      'Notification',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     onTap: () {
                       // Handle notification tap
                     },
@@ -200,7 +248,10 @@ class _SettingPageState extends State<SettingPage> {
                   Divider(),
                   ListTile(
                     leading: Icon(Icons.logout),
-                    title: Text('Log Out'),
+                    title: Text(
+                      'Log Out',
+                      style: TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     onTap: () {
                       onbackpressed();
                     },
