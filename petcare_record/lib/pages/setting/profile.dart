@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/auth.dart';
-import 'package:petcare_record/pages/auth/login.dart';
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -74,12 +73,17 @@ class _ProfilePageState extends State<ProfilePage> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
-          horizontal: width / 36,
+          horizontal: width / 15,
           vertical: height / 36,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: height / 56),
+            Text(
+              "Email Address",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
@@ -103,6 +107,10 @@ class _ProfilePageState extends State<ProfilePage> {
               ),
             ),
             SizedBox(height: height / 56),
+            Text(
+              "First Name",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             TextField(
               controller: firstNameController,
               scrollPadding: EdgeInsets.only(
@@ -135,6 +143,10 @@ class _ProfilePageState extends State<ProfilePage> {
               onChanged: (value) {},
             ),
             SizedBox(height: height / 56),
+            Text(
+              "Last Name",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             TextField(
               controller: lastNameController,
               scrollPadding: EdgeInsets.only(
@@ -170,6 +182,10 @@ class _ProfilePageState extends State<ProfilePage> {
               onChanged: (value) {},
             ),
             SizedBox(height: height / 56),
+            Text(
+              "Phone Number",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             TextField(
               controller: phoneController,
               scrollPadding: EdgeInsets.only(
@@ -206,31 +222,36 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             SizedBox(height: height / 28),
             InkWell(
-              onTap: () {
-                saveInfo();
-              },
-              child: Container(
-                height: 40.h,
-                width: 100.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: PetRecordColor.theme,
-                ),
+                onTap: () async {
+                  await saveInfo();
+                  Navigator.pop(context, true);
+                },
                 child: Center(
-                  child: Text(
-                    'Save',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  child: Container(
+                    height: 40.h,
+                    width: 100.w,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: PetRecordColor.theme,
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Save',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                )),
           ],
         ),
       ),
     );
   }
 
-  void saveInfo() async {
+  Future<void> saveInfo() async {
     try {
       var user = FirebaseAuth.instance.currentUser;
       if (user != null) {
@@ -249,8 +270,6 @@ class _ProfilePageState extends State<ProfilePage> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('Saved')),
           );
-
-          Navigator.pop(context);
         } else {
           print('User document does not exist');
         }

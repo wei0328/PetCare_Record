@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/setting/password.dart';
+import 'package:petcare_record/pages/setting/preferences.dart';
 import 'package:petcare_record/pages/setting/profile.dart';
 
 class SettingPage extends StatefulWidget {
@@ -19,10 +20,11 @@ class _SettingPageState extends State<SettingPage> {
   String phoneNumber = '';
   String lastName = '';
   String profileImageUrl = '';
+
   @override
   void initState() {
-    super.initState();
     fetchUserInfo();
+    super.initState();
   }
 
   Future<void> fetchUserInfo() async {
@@ -178,8 +180,8 @@ class _SettingPageState extends State<SettingPage> {
                       'Profile',
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
-                    onTap: () {
-                      showModalBottomSheet(
+                    onTap: () async {
+                      await showModalBottomSheet(
                         context: context,
                         isScrollControlled: true,
                         builder: (BuildContext context) {
@@ -189,12 +191,14 @@ class _SettingPageState extends State<SettingPage> {
                               topRight: Radius.circular(20.0),
                             ),
                             child: FractionallySizedBox(
-                              heightFactor: 0.8,
+                              heightFactor: 0.75,
                               child: ProfilePage(),
                             ),
                           );
                         },
                       );
+                      // Fetch user info again when returning from ProfilePage
+                      fetchUserInfo();
                     },
                   ),
                   Divider(),
@@ -215,7 +219,7 @@ class _SettingPageState extends State<SettingPage> {
                               topRight: Radius.circular(20.0),
                             ),
                             child: FractionallySizedBox(
-                              heightFactor: 0.8,
+                              heightFactor: 0.75,
                               child: PasswordPage(),
                             ),
                           );
@@ -231,7 +235,22 @@ class _SettingPageState extends State<SettingPage> {
                       style: TextStyle(fontWeight: FontWeight.w500),
                     ),
                     onTap: () {
-                      // Handle preferences tap
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        builder: (BuildContext context) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(20.0),
+                              topRight: Radius.circular(20.0),
+                            ),
+                            child: FractionallySizedBox(
+                              heightFactor: 0.75,
+                              child: PreferencesPage(),
+                            ),
+                          );
+                        },
+                      );
                     },
                   ),
                   Divider(),

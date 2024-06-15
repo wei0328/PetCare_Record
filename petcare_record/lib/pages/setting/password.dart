@@ -46,12 +46,13 @@ class _PasswordPageState extends State<PasswordPage> {
       ),
       body: SingleChildScrollView(
         padding: EdgeInsets.symmetric(
-          horizontal: width / 36,
+          horizontal: width / 15,
           vertical: height / 36,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: height / 56),
             Text(
               "Current Password",
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -176,24 +177,28 @@ class _PasswordPageState extends State<PasswordPage> {
             ),
             SizedBox(height: height / 28),
             InkWell(
-              onTap: () {
-                changePassword();
-              },
-              child: Container(
-                height: 40.h,
-                width: 100.w,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: PetRecordColor.theme,
-                ),
+                onTap: () {
+                  changePassword();
+                },
                 child: Center(
-                  child: Text(
-                    'Confirm',
-                    style: TextStyle(fontSize: 16, color: Colors.white),
+                  child: Container(
+                    height: 40.h,
+                    width: 100.w,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: PetRecordColor.theme,
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Confirm',
+                        style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
-                ),
-              ),
-            ),
+                )),
           ],
         ),
       ),
