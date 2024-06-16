@@ -43,6 +43,7 @@ dependencies:
   flutter_svg: ^2.0.10+1
   firebase_storage: ^12.0.1
   shared_preferences: ^2.2.3
+  image_cropper: ^7.0.5
 
 dev_dependencies:
   flutter_test:

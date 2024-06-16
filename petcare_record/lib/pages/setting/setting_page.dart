@@ -1,8 +1,10 @@
+import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/setting/password.dart';
@@ -19,7 +21,8 @@ class _SettingPageState extends State<SettingPage> {
   String email = '';
   String phoneNumber = '';
   String lastName = '';
-  String profileImageUrl = '';
+
+  Uint8List? profileImage;
 
   @override
   void initState() {
@@ -42,7 +45,6 @@ class _SettingPageState extends State<SettingPage> {
             firstName = userData['firstName'] ?? '';
             lastName = userData['lastName'] ?? '';
             phoneNumber = userData['phoneNumber'] ?? '';
-            profileImageUrl = userData['profileImageUrl'] ?? '';
           });
         } else {
           print('User document does not exist');
@@ -97,6 +99,15 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  Future<void> selectImage() async {
+    Uint8List? img = await pickImage(ImageSource.gallery);
+    if (img != null) {
+      setState(() {
+        profileImage = img;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,41 +125,33 @@ class _SettingPageState extends State<SettingPage> {
                 Center(
                   child: Stack(
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundColor: Colors.grey[200],
-                        child: profileImageUrl.isNotEmpty
-                            ? ClipOval(
-                                child: Image.network(
-                                  profileImageUrl,
-                                  fit: BoxFit.cover,
-                                  width: 100,
-                                  height: 100,
-                                  errorBuilder: (context, error, stackTrace) {
-                                    return Icon(
-                                      Icons.person,
-                                      size: 50,
-                                      color: Colors.grey,
-                                    );
-                                  },
-                                ),
-                              )
-                            : Icon(
+                      profileImage != null
+                          ? CircleAvatar(
+                              radius: 50,
+                              backgroundImage: MemoryImage(profileImage!),
+                            )
+                          : CircleAvatar(
+                              radius: 50,
+                              backgroundColor: Colors.grey[200],
+                              child: Icon(
                                 Icons.person,
-                                size: 100,
+                                size: 50,
                                 color: Colors.grey,
                               ),
-                      ),
+                            ),
                       Positioned(
                         right: 0,
                         bottom: 0,
-                        child: CircleAvatar(
-                          radius: 15,
-                          backgroundColor: Colors.white,
-                          child: Icon(
-                            Icons.camera_alt,
-                            size: 18,
-                            color: Colors.black,
+                        child: GestureDetector(
+                          onTap: selectImage,
+                          child: CircleAvatar(
+                            radius: 15,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.camera_alt,
+                              size: 18,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       ),
@@ -282,5 +285,22 @@ class _SettingPageState extends State<SettingPage> {
         ],
       ),
     );
+  }
+}
+
+Future<Uint8List?> pickImage(ImageSource source) async {
+  try {
+    final ImagePicker imagePicker = ImagePicker();
+    XFile? file = await imagePicker.pickImage(source: source);
+
+    if (file != null) {
+      return await file.readAsBytes();
+    } else {
+      print("No Image Selected");
+      return null;
+    }
+  } catch (e) {
+    print("Error picking image: $e");
+    return null;
   }
 }
