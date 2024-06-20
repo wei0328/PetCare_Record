@@ -1,8 +1,12 @@
-// image.dart
-
 import 'dart:typed_data';
-import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:image_picker/image_picker.dart';
+import 'package:http/http.dart' as http;
+
+final storageRef =
+    FirebaseStorage.instanceFor(bucket: 'gs://petcarerecord.appspot.com').ref();
 
 Future<Uint8List?> pickImage(ImageSource source) async {
   try {
@@ -21,21 +25,49 @@ Future<Uint8List?> pickImage(ImageSource source) async {
   }
 }
 
-class ImageEditor extends StatefulWidget {
-  final Uint8List image;
-  final Function(Uint8List) onCropped;
-
-  ImageEditor({required this.image, required this.onCropped});
-
-  @override
-  _ImageEditorState createState() => _ImageEditorState();
+Future<Uint8List?> downloadImage(String imageName) async {
+  try {
+    print("Attempting to download image with name: $imageName");
+    final ref = storageRef.child(imageName);
+    final imageUrl = await ref.getDownloadURL();
+    print("Image URL: $imageUrl");
+    final http.Response response = await http.get(Uri.parse(imageUrl));
+    if (response.statusCode == 200) {
+      return response.bodyBytes;
+    } else {
+      print("Failed to download image, status code: ${response.statusCode}");
+      return null;
+    }
+  } catch (e) {
+    if (e is firebase_storage.FirebaseException &&
+        e.code == 'object-not-found') {
+      print("No object exists at the desired reference.");
+    } else {
+      print("Error downloading image: $e");
+    }
+    return null;
+  }
 }
 
-class _ImageEditorState extends State<ImageEditor> {
-  @override
-  Widget build(BuildContext context) {
-    // TODO: implement build
-    throw UnimplementedError();
+Future<void> uploadImage() async {
+  Uint8List? img = await pickImage(ImageSource.gallery);
+  if (img != null) {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      String fileName = 'profile_image_$userId.jpg';
+      firebase_storage.Reference reference =
+          firebase_storage.FirebaseStorage.instance.ref('userImages/$fileName');
+
+      firebase_storage.SettableMetadata metadata =
+          firebase_storage.SettableMetadata(
+              contentType: 'image/jpeg', customMetadata: {'overwrite': 'true'});
+
+      await reference.putData(img, metadata);
+
+      String downloadUrl = await reference.getDownloadURL();
+      print("Image uploaded successfully: $downloadUrl");
+    } catch (e) {
+      print("Error uploading image: $e");
+    }
   }
-  // 编辑器状态和方法
 }

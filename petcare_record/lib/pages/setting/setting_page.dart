@@ -1,15 +1,19 @@
 import 'dart:typed_data';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/models/image.dart';
 import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/setting/password.dart';
 import 'package:petcare_record/pages/setting/preferences.dart';
 import 'package:petcare_record/pages/setting/profile.dart';
+import 'package:http/http.dart' as http;
 
 class SettingPage extends StatefulWidget {
   @override
@@ -21,8 +25,9 @@ class _SettingPageState extends State<SettingPage> {
   String email = '';
   String phoneNumber = '';
   String lastName = '';
+  String profileImage = '';
 
-  Uint8List? profileImage;
+  Uint8List? userImage;
 
   @override
   void initState() {
@@ -45,7 +50,23 @@ class _SettingPageState extends State<SettingPage> {
             firstName = userData['firstName'] ?? '';
             lastName = userData['lastName'] ?? '';
             phoneNumber = userData['phoneNumber'] ?? '';
+            profileImage = userData['userImage'] ?? '';
           });
+          if (profileImage.isNotEmpty) {
+            print("Profile image name: $profileImage");
+            Uint8List? imageBytes =
+                await downloadImage("userImages/$profileImage");
+            if (imageBytes != null) {
+              setState(() {
+                userImage = imageBytes;
+              });
+              print("Image set successfully");
+            } else {
+              print("Image download returned null");
+            }
+          } else {
+            print("No profile image found");
+          }
         } else {
           print('User document does not exist');
         }
@@ -99,15 +120,6 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
-  Future<void> selectImage() async {
-    Uint8List? img = await pickImage(ImageSource.gallery);
-    if (img != null) {
-      setState(() {
-        profileImage = img;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -125,10 +137,10 @@ class _SettingPageState extends State<SettingPage> {
                 Center(
                   child: Stack(
                     children: [
-                      profileImage != null
+                      userImage != null
                           ? CircleAvatar(
                               radius: 50,
-                              backgroundImage: MemoryImage(profileImage!),
+                              backgroundImage: MemoryImage(userImage!),
                             )
                           : CircleAvatar(
                               radius: 50,
@@ -143,7 +155,10 @@ class _SettingPageState extends State<SettingPage> {
                         right: 0,
                         bottom: 0,
                         child: GestureDetector(
-                          onTap: selectImage,
+                          onTap: () async {
+                            await uploadImage();
+                            await fetchUserInfo();
+                          },
                           child: CircleAvatar(
                             radius: 15,
                             backgroundColor: Colors.white,
@@ -285,22 +300,5 @@ class _SettingPageState extends State<SettingPage> {
         ],
       ),
     );
-  }
-}
-
-Future<Uint8List?> pickImage(ImageSource source) async {
-  try {
-    final ImagePicker imagePicker = ImagePicker();
-    XFile? file = await imagePicker.pickImage(source: source);
-
-    if (file != null) {
-      return await file.readAsBytes();
-    } else {
-      print("No Image Selected");
-      return null;
-    }
-  } catch (e) {
-    print("Error picking image: $e");
-    return null;
   }
 }

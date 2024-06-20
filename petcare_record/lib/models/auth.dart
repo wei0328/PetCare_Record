@@ -35,19 +35,20 @@ class AuthController extends GetxController {
           'lastName': lastNameController.text.trim(),
           'email': emailController.text.trim(),
           'phoneNumber': phoneController.text.trim(),
+          'userImage': '',
         });
 
         Get.offAll(() => MyHomePage());
       }
     } catch (e) {
       isLoading.value = false;
-
       Get.snackbar(
         'Error',
         e.toString(),
         snackPosition: SnackPosition.BOTTOM,
       );
     }
+    clearControllers();
   }
 
   login(BuildContext context) async {
