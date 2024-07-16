@@ -4,7 +4,7 @@ import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/auth/login.dart';
 import 'package:petcare_record/pages/diary_page.dart';
 import 'package:petcare_record/pages/setting/setting_page.dart';
-import 'package:petcare_record/pages/my_pets_page.dart';
+import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:petcare_record/pages/map_page.dart';
 import 'package:petcare_record/dashboard/bottom_navigation_bar.dart';
 import 'package:get/get.dart';

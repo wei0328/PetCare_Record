@@ -8,28 +8,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:uuid/uuid.dart';
 
-// class Pet {
-//   final String name;
-//   final String gender;
-//   final String birthday;
-//   final String type;
-//   final String weight;
-//   final String note;
-//   final String petImage;
-//   final String id;
-
-//   Pet({
-//     required this.name,
-//     required this.gender,
-//     required this.birthday,
-//     required this.type,
-//     required this.weight,
-//     required this.note,
-//     required this.petImage,
-//     required this.id,
-//   });
-// }
-
 class AddPetPage extends StatefulWidget {
   @override
   _AddPetPageState createState() => _AddPetPageState();
@@ -205,10 +183,10 @@ class _AddPetPageState extends State<AddPetPage> {
       }
     }
 
-    String imageUrl = '';
+    String petImage = '';
 
     if (_selectedImage != null) {
-      imageUrl = await uploadPetImage(_selectedImage!, petId);
+      petImage = await uploadPetImage(_selectedImage!, petId);
     }
 
     var user = FirebaseAuth.instance.currentUser;
@@ -219,25 +197,68 @@ class _AddPetPageState extends State<AddPetPage> {
         FirebaseFirestore.instance.collection(collectionName);
 
     try {
-      await collectionRef.doc(documentName).update({
-        'files': FieldValue.arrayUnion([
-          {
-            'id': petId,
-            'name': name,
-            'gender': gender,
-            'birthday': birthday,
-            'type': type,
-            'weight': weight,
-            'weightUnit': selectedWeightUnit,
-            'note': note,
-            'image': imageUrl,
-          }
-        ])
-      });
+      // Check if the document already exists
+      DocumentSnapshot docSnapshot =
+          await collectionRef.doc(documentName).get();
+
+      if (docSnapshot.exists) {
+        // Document exists, update it
+        await collectionRef.doc(documentName).update({
+          'files': FieldValue.arrayUnion([
+            {
+              'id': petId,
+              'name': name,
+              'gender': gender,
+              'birthday': birthday,
+              'type': type,
+              'weight': weight,
+              'weightUnit': selectedWeightUnit,
+              'note': note,
+              'image': petImage,
+            }
+          ])
+        });
+      } else {
+        // Document does not exist, create it
+        await collectionRef.doc(documentName).set({
+          'files': [
+            {
+              'id': petId,
+              'name': name,
+              'gender': gender,
+              'birthday': birthday,
+              'type': type,
+              'weight': weight,
+              'weightUnit': selectedWeightUnit,
+              'note': note,
+              'image': petImage,
+            }
+          ]
+        });
+      }
+
+      // Navigate back to previous screen
+      Navigator.pop(context, 'refresh');
     } catch (e) {
       print("Error saving pet: $e");
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text("Error"),
+            content: Text("Failed to save pet information."),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
     }
-    Navigator.pop(context, true);
   }
 
   @override

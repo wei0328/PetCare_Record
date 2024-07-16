@@ -73,26 +73,22 @@ Future<void> uploadUserImage() async {
 }
 
 Future<String> uploadPetImage(Uint8List imgData, String petId) async {
-  if (imgData != null) {
-    try {
-      String userId = FirebaseAuth.instance.currentUser!.uid;
-      String fileName = 'pets_image_$userId _$petId.jpg';
-      firebase_storage.Reference reference =
-          firebase_storage.FirebaseStorage.instance.ref('petImages/$fileName');
+  try {
+    String userId = FirebaseAuth.instance.currentUser!.uid;
+    String fileName = 'pets_image_$userId _$petId.jpg';
+    firebase_storage.Reference reference =
+        firebase_storage.FirebaseStorage.instance.ref('petImages/$fileName');
 
-      firebase_storage.SettableMetadata metadata =
-          firebase_storage.SettableMetadata(
-              contentType: 'image/jpeg', customMetadata: {'overwrite': 'true'});
+    firebase_storage.SettableMetadata metadata =
+        firebase_storage.SettableMetadata(
+            contentType: 'image/jpeg', customMetadata: {'overwrite': 'true'});
 
-      await reference.putData(imgData, metadata);
+    await reference.putData(imgData, metadata);
 
-      String downloadUrl = await reference.getDownloadURL();
-      print("Image uploaded successfully: $downloadUrl");
-      return downloadUrl; // Return the download URL
-    } catch (e) {
-      print("Error uploading image: $e");
-      return ''; // Handle error case, returning an empty string
-    }
+    print("Image uploaded successfully: $fileName");
+    return fileName; // Return the file name
+  } catch (e) {
+    print("Error uploading image: $e");
+    return ''; // Handle error case, returning an empty string
   }
-  return ''; // Handle case where imgData is null
 }
