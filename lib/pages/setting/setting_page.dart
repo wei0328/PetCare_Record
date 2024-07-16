@@ -156,7 +156,7 @@ class _SettingPageState extends State<SettingPage> {
                         bottom: 0,
                         child: GestureDetector(
                           onTap: () async {
-                            await uploadImage();
+                            await uploadUserImage();
                             await fetchUserInfo();
                           },
                           child: CircleAvatar(

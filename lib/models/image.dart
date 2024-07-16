@@ -49,7 +49,7 @@ Future<Uint8List?> downloadImage(String imageName) async {
   }
 }
 
-Future<void> uploadImage() async {
+Future<void> uploadUserImage() async {
   Uint8List? img = await pickImage(ImageSource.gallery);
   if (img != null) {
     try {
@@ -70,4 +70,29 @@ Future<void> uploadImage() async {
       print("Error uploading image: $e");
     }
   }
+}
+
+Future<String> uploadPetImage(Uint8List imgData, String petId) async {
+  if (imgData != null) {
+    try {
+      String userId = FirebaseAuth.instance.currentUser!.uid;
+      String fileName = 'pets_image_$userId _$petId.jpg';
+      firebase_storage.Reference reference =
+          firebase_storage.FirebaseStorage.instance.ref('petImages/$fileName');
+
+      firebase_storage.SettableMetadata metadata =
+          firebase_storage.SettableMetadata(
+              contentType: 'image/jpeg', customMetadata: {'overwrite': 'true'});
+
+      await reference.putData(imgData, metadata);
+
+      String downloadUrl = await reference.getDownloadURL();
+      print("Image uploaded successfully: $downloadUrl");
+      return downloadUrl; // Return the download URL
+    } catch (e) {
+      print("Error uploading image: $e");
+      return ''; // Handle error case, returning an empty string
+    }
+  }
+  return ''; // Handle case where imgData is null
 }

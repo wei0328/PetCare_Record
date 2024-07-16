@@ -14,4 +14,5 @@ class PetRecordColor {
   static const iconcolor = Color(0xffA6A6A6);
   static const immutableText = Color.fromARGB(255, 107, 107, 107);
   static const textBoxcolor = Color.fromARGB(230, 235, 236, 236);
+  static const focusColor = Color.fromARGB(255, 110, 178, 183);
 }
