@@ -10,6 +10,7 @@ import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/image.dart';
 import 'package:petcare_record/pages/myPets/add_pet_page.dart';
 import 'package:petcare_record/pages/myPets/edit_page.dart';
+import 'package:petcare_record/pages/myPets/pet_detail_page.dart';
 
 class Pet {
   final String name;
@@ -125,6 +126,59 @@ class _MyPetsPageState extends State<MyPetsPage> {
     }
   }
 
+  Future<void> fetchEditPetData(String petId) async {
+    var user = FirebaseAuth.instance.currentUser;
+    String documentName = user?.uid ?? '';
+    String collectionName = 'Pets';
+
+    final DocumentReference documentRef =
+        FirebaseFirestore.instance.collection(collectionName).doc(documentName);
+
+    try {
+      DocumentSnapshot documentSnapshot = await documentRef.get();
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> filesData = data['files'] ?? [];
+
+        for (var fileData in filesData) {
+          if (fileData['id'] == petId) {
+            String petImageName = fileData['image'] ?? '';
+            Uint8List? petImage;
+            if (petImageName.isNotEmpty) {
+              Uint8List? imageBytes =
+                  await downloadImage("petImages/$petImageName");
+              petImage = imageBytes ?? null;
+            }
+
+            Pet updatedPet = Pet(
+              name: fileData['name'] ?? '',
+              gender: fileData['gender'] ?? '',
+              birthday: fileData['birthday'] ?? '',
+              type: fileData['type'] ?? '',
+              weight: fileData['weight'] ?? '',
+              note: fileData['note'] ?? '',
+              petImageName: petImageName,
+              weightUnit: fileData['weightUnit'] ?? '',
+              id: fileData['id'] ?? '',
+              petImage: petImage,
+            );
+
+            setState(() {
+              int index = pets.indexWhere((pet) => pet.id == petId);
+              if (index != -1) {
+                pets[index] = updatedPet;
+              }
+            });
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      print("Error fetching pet data: $e");
+    }
+  }
+
   Future<void> deletePet(String id, String petImageName) async {
     var user = FirebaseAuth.instance.currentUser;
     String documentName = user?.uid ?? '';
@@ -152,6 +206,20 @@ class _MyPetsPageState extends State<MyPetsPage> {
       setState(() {
         pets.removeWhere((pet) => pet.id == id);
       });
+
+      // Delete the associated image from Firebase Storage
+      if (petImageName.isNotEmpty) {
+        try {
+          await FirebaseStorage.instance
+              .ref('petImages/$petImageName')
+              .delete();
+          print('Image deleted successfully');
+        } catch (e) {
+          print('Error deleting image: $e');
+        }
+      }
+    } else {
+      print('Document does not exist');
     }
   }
 
@@ -258,13 +326,10 @@ class _MyPetsPageState extends State<MyPetsPage> {
                             deletePet(pet.id, pet.petImageName);
                           },
                           child: Padding(
-                            padding: const EdgeInsets.only(
-                                left: 30.0,
-                                right: 30.0,
-                                top: 10.0,
-                                bottom: 10.0),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 30.0, vertical: 10.0),
                             child: Container(
-                              height: 80,
+                              height: 100, // Increased height for better layout
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(15),
                                 color: Colors.white,
@@ -283,29 +348,37 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                     child: ListTile(
                                       leading: pet.petImage != null
                                           ? CircleAvatar(
-                                              radius: 50,
+                                              radius:
+                                                  30, // Adjusted radius for better appearance
                                               backgroundImage:
                                                   MemoryImage(pet.petImage!),
                                             )
                                           : CircleAvatar(
-                                              radius: 50,
+                                              radius: 30,
                                               backgroundColor: Colors.grey[200],
                                               child: Icon(
                                                 Icons.pets,
-                                                size: 50,
+                                                size: 30,
                                                 color: Colors.grey,
                                               ),
                                             ),
                                       title: Text(
                                         pet.name,
                                         style: TextStyle(
-                                          fontSize: 24,
+                                          fontSize: 20, // Adjusted font size
                                           fontFamily: 'Roboto',
                                           fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                       onTap: () {
-                                        // Handle tap on pet item
+                                        // Navigate to PetDetailPage
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                PetDetailPage(pet: pet),
+                                          ),
+                                        );
                                       },
                                     ),
                                   ),
@@ -372,16 +445,18 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                     child: TextButton(
                                       onPressed: () async {
                                         // Handle edit pet action
-                                        String? refresh = await Navigator.push(
+                                        Navigator.push(
                                           context,
                                           MaterialPageRoute(
-                                              builder: (context) =>
-                                                  EditPetPage(petId: pet.id)),
-                                        );
-                                        if (refresh == 'refresh') {
-                                          // Refresh pet data if the edit was successful
-                                          fetchPetsData();
-                                        }
+                                            builder: (context) =>
+                                                EditPetPage(petId: pet.id),
+                                          ),
+                                        ).then((refresh) {
+                                          if (refresh == 'refresh') {
+                                            fetchEditPetData(pet
+                                                .id); // Fetch data for the specific pet
+                                          }
+                                        });
                                       },
                                       child: Text(
                                         'Edit',

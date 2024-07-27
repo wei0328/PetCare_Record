@@ -10,7 +10,7 @@ class PetRecordColor {
   static const info = Color(0xFFF4F4F4);
   static const grey = Color(0xffA1A1A1);
   static const lightgrey = Color.fromARGB(255, 239, 240, 239);
-  static const textgray = Color(0xff7D7C7C);
+  static const textgray = Color.fromARGB(255, 110, 110, 110);
   static const iconcolor = Color(0xffA6A6A6);
   static const immutableText = Color.fromARGB(255, 107, 107, 107);
   static const textBoxcolor = Color.fromARGB(230, 235, 236, 236);
