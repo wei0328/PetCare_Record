@@ -55,9 +55,8 @@ class _MyHomePageState extends State<MyHomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          DiaryPage(),
+          //DiaryPage(),
           MyPetsPage(),
-          MapPage(),
           SettingPage(),
         ],
       ),

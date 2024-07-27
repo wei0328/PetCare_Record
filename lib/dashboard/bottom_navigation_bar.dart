@@ -25,17 +25,13 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       items: const <BottomNavigationBarItem>[
-        BottomNavigationBarItem(
-          icon: Icon(Icons.book),
-          label: 'Diary',
-        ),
+        // BottomNavigationBarItem(
+        //   icon: Icon(Icons.book),
+        //   label: 'Diary',
+        // ),
         BottomNavigationBarItem(
           icon: Icon(Icons.pets),
           label: 'My Pets',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.map),
-          label: 'Map',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.settings),
@@ -45,7 +41,7 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
       currentIndex: widget.currentIndex,
       selectedItemColor: PetRecordColor.theme,
       unselectedItemColor: PetRecordColor.iconcolor,
-      backgroundColor: PetRecordColor.black,
+      backgroundColor: PetRecordColor.white,
       onTap: widget.onItemSelected,
     );
   }
