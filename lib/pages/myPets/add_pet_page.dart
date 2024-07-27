@@ -84,7 +84,8 @@ class _AddPetPageState extends State<AddPetPage> {
 
     String name = petNameController.text;
     String? gender = selectedGender;
-    String birthday = bDayController.text;
+    String birthday =
+        dontKnowBirthday ? "Don't know" : selectedDate.toIso8601String();
     String type = petTypeController.text;
     String weight = petWeightController.text;
     String note = noteController.text;
@@ -264,8 +265,6 @@ class _AddPetPageState extends State<AddPetPage> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    height = size.height;
-    width = size.width;
 
     return Scaffold(
       appBar: AppBar(
@@ -331,33 +330,15 @@ class _AddPetPageState extends State<AddPetPage> {
                   ],
                 ),
               ),
-              SizedBox(height: height / 56),
-              Text(
-                "Name",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextField(
+              SizedBox(height: 10),
+              TextFormField(
                 controller: petNameController,
-                scrollPadding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                cursorColor: PetRecordColor.grey,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: PetRecordColor.black,
-                ),
                 decoration: InputDecoration(
-                  hintText: "Pet's name",
-                  hintStyle: TextStyle(
-                    fontSize: 15,
-                    color: PetRecordColor.grey,
+                  labelText: "Pet's Name",
+                  labelStyle: TextStyle(color: PetRecordColor.theme),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 10,
-                  ),
-                  prefixIcon:
-                      Icon(Icons.pets_outlined, color: PetRecordColor.theme),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: PetRecordColor.theme),
@@ -367,219 +348,20 @@ class _AddPetPageState extends State<AddPetPage> {
                     borderSide: BorderSide(color: PetRecordColor.focusColor),
                   ),
                 ),
-                onChanged: (value) {},
+                //onChanged: (value) {},
               ),
-              SizedBox(height: height / 56),
-              Text('Gender',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Flexible(
-                    flex: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                            value: 'Male',
-                            groupValue: selectedGender,
-                            activeColor: PetRecordColor.theme,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedGender = value as String?;
-                              });
-                            }),
-                        Text('Male'),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    flex: 2,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                            value: 'Female',
-                            groupValue: selectedGender,
-                            activeColor: PetRecordColor.theme,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedGender = value as String?;
-                              });
-                            }),
-                        Text('Female'),
-                      ],
-                    ),
-                  ),
-                  Flexible(
-                    flex: 3,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        Radio(
-                            value: 'No Setting',
-                            groupValue: selectedGender,
-                            activeColor: PetRecordColor.theme,
-                            onChanged: (value) {
-                              setState(() {
-                                selectedGender = value as String?;
-                              });
-                            }),
-                        Text('No Setting'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Text(
-                    'Date of Birth',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  SizedBox(width: 20),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: dontKnowBirthday,
-                        onChanged: (value) {
-                          setState(() {
-                            dontKnowBirthday = value!;
-                            if (dontKnowBirthday) {
-                              bDayController.text = "";
-                            } else {
-                              // Reset to current date or initial value if needed
-                              bDayController.text =
-                                  "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
-                            }
-                          });
-                        },
-                        // height:30,
-                        activeColor: PetRecordColor.theme,
-                      ),
-                      Text("Don't know"),
-                    ],
-                  ),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => _selectDate(context),
-                child: TextFormField(
-                  controller: bDayController,
-                  readOnly:
-                      dontKnowBirthday, // Make readonly if "Don't know" is checked
-                  onTap: () {
-                    if (dontKnowBirthday) {
-                      // Show a message or handle as per your requirement
-                    } else {
-                      _selectDate(context); // Allow date selection
-                    }
-                  },
-                  cursorColor: PetRecordColor.grey,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color:
-                        dontKnowBirthday ? Colors.grey : PetRecordColor.black,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: "yyyy - mm - dd",
-                    hintStyle: TextStyle(
-                      fontSize: 15,
-                      color: PetRecordColor.grey,
-                    ),
-                    contentPadding: EdgeInsets.symmetric(
-                      vertical: 10,
-                      horizontal: 10,
-                    ),
-                    prefixIcon:
-                        Icon(Icons.cake_outlined, color: PetRecordColor.theme),
-                    enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: PetRecordColor.theme),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: BorderSide(color: PetRecordColor.focusColor),
-                    ),
-                    filled: true,
-                    fillColor:
-                        dontKnowBirthday ? Colors.grey[200] : Colors.white,
-                  ),
-                  onChanged: (value) {},
-                ),
-              ),
-              SizedBox(height: height / 56),
-              Text(
-                "Pet Type",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
-              TextField(
-                controller: petTypeController,
-                scrollPadding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                cursorColor: PetRecordColor.grey,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: PetRecordColor.black,
-                ),
-                decoration: InputDecoration(
-                  hintText: "Cat, Dog, Bird...",
-                  hintStyle: TextStyle(
-                    fontSize: 15,
-                    color: PetRecordColor.grey,
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 10,
-                  ),
-                  prefixIcon: Icon(Icons.pets, color: PetRecordColor.theme),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: PetRecordColor.theme),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: PetRecordColor.focusColor),
-                  ),
-                ),
-                onChanged: (value) {},
-              ),
-              SizedBox(height: height / 56),
-              Text(
-                "Weight",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-              ),
+              SizedBox(height: 10),
               Row(
                 children: [
                   Expanded(
-                    flex: 2,
-                    child: TextField(
-                      controller: petWeightController,
-                      scrollPadding: EdgeInsets.only(
-                        bottom: MediaQuery.of(context).viewInsets.bottom,
-                      ),
-                      cursorColor: PetRecordColor.grey,
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: PetRecordColor.black,
-                      ),
+                    child: TextFormField(
+                      controller: bDayController,
                       decoration: InputDecoration(
-                        hintText: "Pet weight",
-                        hintStyle: TextStyle(
-                          fontSize: 15,
-                          color: PetRecordColor.grey,
+                        labelText: 'Birthday',
+                        labelStyle: TextStyle(color: PetRecordColor.theme),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
                         ),
-                        contentPadding: EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 10,
-                        ),
-                        prefixIcon: Icon(Icons.monitor_weight_outlined,
-                            color: PetRecordColor.theme),
                         enabledBorder: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                           borderSide: BorderSide(color: PetRecordColor.theme),
@@ -590,76 +372,36 @@ class _AddPetPageState extends State<AddPetPage> {
                               BorderSide(color: PetRecordColor.focusColor),
                         ),
                       ),
-                      onChanged: (value) {},
+                      readOnly: true,
+                      onTap:
+                          dontKnowBirthday ? null : () => _selectDate(context),
                     ),
                   ),
                   SizedBox(width: 10),
-                  Expanded(
-                    flex: 1,
-                    child: Container(
-                      height: 30,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(color: Colors.transparent),
-                      ),
-                      child: DropdownButtonFormField<String>(
-                        value: selectedWeightUnit,
-                        onChanged: (String? newValue) {
-                          setState(() {
-                            selectedWeightUnit = newValue!;
-                          });
-                        },
-                        items: <String>['kg', 'lb']
-                            .map<DropdownMenuItem<String>>((String value) {
-                          return DropdownMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          );
-                        }).toList(),
-                        decoration: InputDecoration(
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.transparent),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide(color: Colors.transparent),
-                          ),
-                        ),
-                      ),
-                    ),
+                  Checkbox(
+                    value: dontKnowBirthday,
+                    onChanged: (value) {
+                      setState(() {
+                        dontKnowBirthday = value!;
+                        bDayController.text = dontKnowBirthday
+                            ? "Don't know"
+                            : "${selectedDate.year}-${selectedDate.month}-${selectedDate.day}";
+                      });
+                    },
+                    activeColor: PetRecordColor.theme,
                   ),
+                  Text("Don't know"),
                 ],
               ),
-              SizedBox(height: height / 56),
-              Text('Note',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              SizedBox(height: 10),
               TextFormField(
-                controller: noteController,
-                minLines: 3, // Minimum number of lines to display
-                maxLines:
-                    3, // Maximum number of lines to display before scrolling
-                scrollPadding: EdgeInsets.only(
-                  bottom: MediaQuery.of(context).viewInsets.bottom,
-                ),
-                cursorColor: PetRecordColor.grey,
-                style: TextStyle(
-                  fontSize: 15,
-                  color: PetRecordColor.black,
-                ),
+                controller: petTypeController,
                 decoration: InputDecoration(
-                  hintText: "Additional information about your pet",
-                  hintStyle: TextStyle(
-                    fontSize: 15,
-                    color: PetRecordColor.grey,
+                  labelText: 'Type',
+                  labelStyle: TextStyle(color: PetRecordColor.theme),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  contentPadding: EdgeInsets.symmetric(
-                    vertical: 10,
-                    horizontal: 10,
-                  ),
-                  prefixIcon:
-                      Icon(Icons.book_outlined, color: PetRecordColor.theme),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
                     borderSide: BorderSide(color: PetRecordColor.theme),
@@ -669,33 +411,124 @@ class _AddPetPageState extends State<AddPetPage> {
                     borderSide: BorderSide(color: PetRecordColor.focusColor),
                   ),
                 ),
-                onChanged: (value) {},
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: petWeightController,
+                      decoration: InputDecoration(
+                        labelText: 'Weight ($selectedWeightUnit)',
+                        labelStyle: TextStyle(color: PetRecordColor.theme),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: BorderSide(color: PetRecordColor.theme),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide:
+                              BorderSide(color: PetRecordColor.focusColor),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  DropdownButton<String>(
+                    value: selectedWeightUnit,
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedWeightUnit = newValue!;
+                      });
+                    },
+                    items: <String>['kg', 'lb']
+                        .map<DropdownMenuItem<String>>(
+                          (String value) => DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              DropdownButtonFormField<String>(
+                value: selectedGender,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedGender = newValue;
+                  });
+                },
+                items: <String>['Male', 'Female', "Don't Know"]
+                    .map<DropdownMenuItem<String>>(
+                      (String value) => DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      ),
+                    )
+                    .toList(),
+                decoration: InputDecoration(
+                  labelText: 'Gender',
+                  labelStyle: TextStyle(color: PetRecordColor.theme),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: PetRecordColor.theme),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: PetRecordColor.focusColor),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              TextFormField(
+                controller: noteController,
+                maxLines: 3,
+                decoration: InputDecoration(
+                  labelText: 'Notes',
+                  labelStyle: TextStyle(color: PetRecordColor.theme),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: PetRecordColor.theme),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide(color: PetRecordColor.focusColor),
+                  ),
+                ),
               ),
               SizedBox(height: 20),
-              InkWell(
-                onTap: () async {
-                  await savePet();
-                },
-                child: Center(
-                  child: Container(
-                    height: 40.h,
-                    width: 100.w,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: PetRecordColor.theme,
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Save',
-                        style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold),
-                      ),
+              SizedBox(
+                height: 50,
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: savePet,
+                  style: ButtonStyle(
+                    backgroundColor:
+                        MaterialStateProperty.all<Color>(PetRecordColor.theme),
+                  ),
+                  child: Text(
+                    'Save',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
+              SizedBox(height: 10),
             ],
           ),
         ),
