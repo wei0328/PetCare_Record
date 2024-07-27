@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/image.dart';
 import 'package:petcare_record/pages/myPets/add_pet_page.dart';
+import 'package:petcare_record/pages/myPets/edit_page.dart';
 
 class Pet {
   final String name;
@@ -18,6 +19,7 @@ class Pet {
   final String weight;
   final String note;
   final String petImageName;
+  final String weightUnit;
   final String id;
   Uint8List? petImage;
 
@@ -27,6 +29,7 @@ class Pet {
     required this.birthday,
     required this.type,
     required this.weight,
+    required this.weightUnit,
     required this.note,
     required this.petImageName,
     required this.id,
@@ -96,6 +99,7 @@ class _MyPetsPageState extends State<MyPetsPage> {
               weight: fileData['weight'] ?? '',
               note: fileData['note'] ?? '',
               petImageName: petImageName,
+              weightUnit: fileData['weightUnit'] ?? '',
               id: fileData['id'] ?? '',
               petImage: petImage,
             ));
@@ -366,9 +370,18 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                     bottom: 0,
                                     right: 0,
                                     child: TextButton(
-                                      onPressed: () {
+                                      onPressed: () async {
                                         // Handle edit pet action
-                                        // You can navigate to the edit page or show a dialog for editing
+                                        String? refresh = await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (context) =>
+                                                  EditPetPage(petId: pet.id)),
+                                        );
+                                        if (refresh == 'refresh') {
+                                          // Refresh pet data if the edit was successful
+                                          fetchPetsData();
+                                        }
                                       },
                                       child: Text(
                                         'Edit',
