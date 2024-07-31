@@ -121,11 +121,10 @@ class _AddEventState extends State<AddEvent> {
         SnackBar(content: Text('Event saved successfully!')),
       );
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
-        MaterialPageRoute(
-          builder: (context) => PetDetailPage(pet: widget.pet),
-        ),
+        MaterialPageRoute(builder: (context) => PetDetailPage(pet: widget.pet)),
+        (Route<dynamic> route) => route.isFirst,
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

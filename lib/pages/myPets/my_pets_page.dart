@@ -260,7 +260,7 @@ class _MyPetsPageState extends State<MyPetsPage> {
               icon: Icon(
                 Icons.add,
                 color: PetRecordColor.white,
-                size: 40,
+                size: 30,
                 weight: 600,
               ),
               onPressed: () async {
