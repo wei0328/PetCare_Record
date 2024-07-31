@@ -322,14 +322,13 @@ class _MyPetsPageState extends State<MyPetsPage> {
                           key: Key(pet.id),
                           direction: DismissDirection.startToEnd,
                           onDismissed: (direction) {
-                            // Handle dismiss (delete) action
                             deletePet(pet.id, pet.petImageName);
                           },
                           child: Padding(
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 30.0, vertical: 10.0),
                             child: Container(
-                              height: 100, // Increased height for better layout
+                              height: 100,
                               decoration: BoxDecoration(
                                 borderRadius: BorderRadius.circular(15),
                                 color: Colors.white,
@@ -348,8 +347,7 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                     child: ListTile(
                                       leading: pet.petImage != null
                                           ? CircleAvatar(
-                                              radius:
-                                                  30, // Adjusted radius for better appearance
+                                              radius: 30,
                                               backgroundImage:
                                                   MemoryImage(pet.petImage!),
                                             )
@@ -371,7 +369,6 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                         ),
                                       ),
                                       onTap: () {
-                                        // Navigate to PetDetailPage
                                         Navigator.push(
                                           context,
                                           MaterialPageRoute(
@@ -389,7 +386,6 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                       icon: Icon(Icons.close),
                                       iconSize: 16,
                                       onPressed: () {
-                                        // Handle delete pet action
                                         showDialog(
                                           context: context,
                                           builder: (BuildContext context) {
@@ -453,8 +449,7 @@ class _MyPetsPageState extends State<MyPetsPage> {
                                           ),
                                         ).then((refresh) {
                                           if (refresh == 'refresh') {
-                                            fetchEditPetData(pet
-                                                .id); // Fetch data for the specific pet
+                                            fetchEditPetData(pet.id);
                                           }
                                         });
                                       },

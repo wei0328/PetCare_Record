@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/pages/addEvent/add_new.dart';
 import 'package:petcare_record/pages/myPets/event_tab.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:intl/intl.dart';
@@ -76,189 +77,179 @@ class PetDetailPage extends StatelessWidget {
             fontFamily: 'Roboto',
           ),
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16.0),
+            child: IconButton(
+              icon: Icon(
+                Icons.add,
+                color: PetRecordColor.white,
+                size: 30,
+                weight: 600,
+              ),
+              onPressed: () async {
+                String refresh = await Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => AddNew(pet: pet)));
+                // if (refresh == 'refresh') {
+                //
+                //   refreshPetsData();
+                // }
+              },
+            ),
+          )
+        ],
       ),
-      body: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.width * 0.75,
-            decoration: BoxDecoration(
-              color: Colors.grey[200],
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.5),
-                  spreadRadius: 2,
-                  blurRadius: 5,
-                  offset: Offset(0, 0),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              child: pet.petImage != null
-                  ? Image.memory(
-                      pet.petImage!,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                    )
-                  : Icon(
-                      Icons.pets,
-                      size: 180,
-                      color: Colors.grey,
-                    ),
-            ),
-          ),
-          Positioned(
-            top: MediaQuery.of(context).size.width * 0.65,
-            left: 15,
-            right: 15,
-            child: Column(
-              children: [
-                Card(
-                  elevation: 5,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+      body: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.width * 0.75,
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 0),
                   ),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Padding(
-                            padding:
-                                const EdgeInsets.symmetric(horizontal: 5.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          '${pet.name}',
-                                          style: TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.w700,
-                                            color: PetRecordColor.theme,
-                                          ),
-                                        ),
-                                        SizedBox(width: 15),
-                                        Text(
-                                          '${pet.type}',
-                                          style: TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Icon(
-                                      genderIcon,
-                                      color: genderColor,
-                                      size: 40,
-                                    ),
-                                  ],
+                ],
+              ),
+              child: ClipRRect(
+                child: pet.petImage != null
+                    ? Image.memory(
+                        pet.petImage!,
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                      )
+                    : Icon(
+                        Icons.pets,
+                        size: 180,
+                        color: Colors.grey,
+                      ),
+              ),
+            ),
+            Transform.translate(
+              offset: Offset(0, -30),
+              child: Card(
+                elevation: 5,
+                margin: EdgeInsets.symmetric(horizontal: 15),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                color: Colors.white,
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                pet.name,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w700,
+                                  color: PetRecordColor.theme,
                                 ),
-                                SizedBox(height: 5),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Age: ',
-                                          style: TextStyle(
-                                              color: PetRecordColor.textgray,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          _calculateAge(pet.birthday),
-                                          style: TextStyle(
-                                              color: PetRecordColor.textgray,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(width: 40),
-                                    Row(
-                                      children: [
-                                        Text(
-                                          'Weight: ',
-                                          style: TextStyle(
-                                              color: PetRecordColor.textgray,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600),
-                                        ),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          _displayWeight(
-                                              pet.weight, pet.weightUnit),
-                                          style: TextStyle(
-                                              color: PetRecordColor.textgray,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                              ),
+                              SizedBox(width: 15),
+                              Text(
+                                pet.type,
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w600,
                                 ),
-                                if (pet.note.isNotEmpty)
-                                  Padding(
-                                    padding: const EdgeInsets.all(0),
-                                    child: Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(height: 5),
-                                          Divider(
-                                            color: Colors.grey[400],
-                                            thickness: 1.0,
-                                          ),
-                                          Text(
-                                            'Note: ',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.w600,
-                                              color: PetRecordColor.textgray,
-                                            ),
-                                          ),
-                                          Text(
-                                            pet.note,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              color: PetRecordColor.textgray,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  )
-                              ],
+                              ),
+                            ],
+                          ),
+                          Icon(
+                            genderIcon,
+                            color: genderColor,
+                            size: 40,
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 5),
+                      Row(
+                        children: [
+                          Text(
+                            'Age: ',
+                            style: TextStyle(
+                              color: PetRecordColor.textgray,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
                             ),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            _calculateAge(pet.birthday),
+                            style: TextStyle(
+                              color: PetRecordColor.textgray,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(width: 40),
+                          Text(
+                            'Weight: ',
+                            style: TextStyle(
+                              color: PetRecordColor.textgray,
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            _displayWeight(pet.weight, pet.weightUnit),
+                            style: TextStyle(
+                              color: PetRecordColor.textgray,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (pet.note.isNotEmpty) ...[
+                        SizedBox(height: 5),
+                        Divider(
+                          color: Colors.grey[400],
+                          thickness: 1.0,
+                        ),
+                        Text(
+                          'Note: ',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: PetRecordColor.textgray,
+                          ),
+                        ),
+                        Text(
+                          pet.note,
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: PetRecordColor.textgray,
                           ),
                         ),
                       ],
-                    ),
+                    ],
                   ),
                 ),
-                SizedBox(
-                  height: 10,
-                ),
-                //EventTab(),
-              ],
+              ),
             ),
-          ),
-        ],
+            //SizedBox(height: 5),
+            Container(
+              height: MediaQuery.of(context).size.height,
+              child: EventTab(),
+            ),
+          ],
+        ),
       ),
     );
   }
