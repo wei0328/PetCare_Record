@@ -22,11 +22,19 @@ class _AddReminderState extends State<AddReminder> {
   DateTime? _selectedEndDate;
   int _frequencyNumber = 1;
   String _frequencyUnit = 'Day';
+  String _note = '';
 
   Future<void> saveReminder() async {
     if (_selectedReminderType == null || _selectedReminderType!.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Reminder type is required.')),
+      );
+      return;
+    }
+
+    if (_selectedDate == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Start date is required.')),
       );
       return;
     }
@@ -40,7 +48,8 @@ class _AddReminderState extends State<AddReminder> {
         'frequencyNumber': _frequencyNumber,
         'frequencyUnit': _frequencyUnit,
         'startDate': _selectedDate,
-        'endDate': _isOnce ? null : _selectedEndDate,
+        'endDate': _selectedEndDate,
+        'note': _note,
       };
 
       DocumentReference petDocRef =
@@ -87,25 +96,28 @@ class _AddReminderState extends State<AddReminder> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SizedBox(height: 20),
-              _buildDropdownMenu(),
-              SizedBox(height: 20),
-              if (_shouldShowFrequencySelector()) _buildFrequencySelector(),
-              SizedBox(height: 20),
+            child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: 20),
+            _buildDropdownMenu(),
+            SizedBox(height: 20),
+            if (_shouldShowFrequencySelector()) _buildFrequencySelector(),
+            SizedBox(height: 20),
+            if (_isOnce)
+              _buildDateTimePicker()
+            else ...[
               _buildDateTimePicker(),
-              if (!_isOnce) ...[
-                SizedBox(height: 20),
-                _buildSetEndDateCheckbox(),
-                if (_setEndDate) _buildEndDatePicker(),
-              ],
               SizedBox(height: 20),
-              _buildReviewButton(),
+              _buildSetEndDateCheckbox(),
+              if (_setEndDate) _buildEndDatePicker(),
             ],
-          ),
-        ),
+            SizedBox(height: 20),
+            _buildNoteField(),
+            SizedBox(height: 20),
+            _buildReviewButton(),
+          ],
+        )),
       ),
     );
   }
@@ -116,6 +128,12 @@ class _AddReminderState extends State<AddReminder> {
       onChanged: (String? newValue) {
         setState(() {
           _selectedReminderType = newValue;
+          if (_selectedReminderType == 'Birthday') {
+            _isOnce = true;
+            _setEndDate = false;
+            _frequencyNumber = 1;
+            _frequencyUnit = 'Day';
+          }
         });
       },
       items: <String>[
@@ -204,82 +222,212 @@ class _AddReminderState extends State<AddReminder> {
   }
 
   Widget _buildDateTimePicker() {
-    return TextFormField(
-      decoration: InputDecoration(
-        labelText: 'Schedule Date and Time',
-        labelStyle: TextStyle(color: PetRecordColor.theme),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+    if (_isOnce) {
+      return TextFormField(
+        decoration: InputDecoration(
+          labelText: 'Schedule Date and Time',
+          labelStyle: TextStyle(color: PetRecordColor.theme),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: PetRecordColor.theme),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(color: PetRecordColor.focusColor),
+          ),
         ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: PetRecordColor.theme),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: PetRecordColor.focusColor),
-        ),
-      ),
-      readOnly: true,
-      onTap: () async {
-        DateTime? pickedDate = await showDatePicker(
-          context: context,
-          initialDate: _selectedDate,
-          firstDate: DateTime.now(),
-          lastDate: DateTime(2101),
-          builder: (BuildContext context, Widget? child) {
-            return Theme(
-              data: ThemeData.light().copyWith(
-                colorScheme: ColorScheme.light(
-                  primary: PetRecordColor.theme,
-                  onPrimary: Colors.white,
-                  surface: Colors.white,
-                  onSurface: Colors.black,
-                ),
-                dialogBackgroundColor: Colors.white,
-              ),
-              child: child!,
-            );
-          },
-        );
-
-        if (pickedDate != null) {
-          TimeOfDay? pickedTime = await showTimePicker(
+        readOnly: true,
+        onTap: () async {
+          DateTime? pickedDate = await showDatePicker(
             context: context,
-            initialTime: _selectedTime,
+            initialDate: _selectedDate,
+            firstDate: DateTime.now(),
+            lastDate: DateTime(2101),
             builder: (BuildContext context, Widget? child) {
               return Theme(
                 data: ThemeData.light().copyWith(
                   colorScheme: ColorScheme.light(
                     primary: PetRecordColor.theme,
                     onPrimary: Colors.white,
+                    surface: Colors.white,
                     onSurface: Colors.black,
                   ),
+                  dialogBackgroundColor: Colors.white,
                 ),
                 child: child!,
               );
             },
           );
 
-          if (pickedTime != null) {
-            setState(() {
-              _selectedDate = DateTime(
-                pickedDate.year,
-                pickedDate.month,
-                pickedDate.day,
-                pickedTime.hour,
-                pickedTime.minute,
-              );
-              _selectedTime = pickedTime;
-            });
+          if (pickedDate != null) {
+            TimeOfDay? pickedTime = await showTimePicker(
+              context: context,
+              initialTime: _selectedTime,
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    colorScheme: ColorScheme.light(
+                      primary: PetRecordColor.theme,
+                      onPrimary: Colors.white,
+                      onSurface: Colors.black,
+                    ),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+
+            if (pickedTime != null) {
+              setState(() {
+                _selectedDate = DateTime(
+                  pickedDate.year,
+                  pickedDate.month,
+                  pickedDate.day,
+                  pickedTime.hour,
+                  pickedTime.minute,
+                );
+                _selectedTime = pickedTime;
+              });
+            }
           }
-        }
-      },
-      controller: TextEditingController(
-        text:
-            '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day} ${_selectedTime.format(context)}',
-      ),
-    );
+        },
+        controller: TextEditingController(
+          text:
+              '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day} ${_selectedTime.format(context)}',
+        ),
+      );
+    } else {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 16, bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                    "Every",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<int>(
+                      value: _frequencyNumber,
+                      onChanged: (int? newValue) {
+                        setState(() {
+                          _frequencyNumber = newValue!;
+                        });
+                      },
+                      items: List<int>.generate(30, (index) => index + 1)
+                          .map<DropdownMenuItem<int>>((int value) {
+                        return DropdownMenuItem<int>(
+                          value: value,
+                          child: Text(value.toString()),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: Colors.grey),
+                  ),
+                  child: DropdownButtonHideUnderline(
+                    child: DropdownButton<String>(
+                      value: _frequencyUnit,
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _frequencyUnit = newValue!;
+                        });
+                      },
+                      items: <String>['Day', 'Week', 'Month']
+                          .map<DropdownMenuItem<String>>((String value) {
+                        return DropdownMenuItem<String>(
+                          value: value,
+                          child: Text(value),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Select Starting Date',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          SizedBox(height: 8),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Select Date',
+              labelStyle: TextStyle(color: PetRecordColor.theme),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: PetRecordColor.theme),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(color: PetRecordColor.focusColor),
+              ),
+            ),
+            readOnly: true,
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime.now(),
+                lastDate: DateTime(2101),
+                builder: (BuildContext context, Widget? child) {
+                  return Theme(
+                    data: ThemeData.light().copyWith(
+                      colorScheme: ColorScheme.light(
+                        primary: PetRecordColor.theme,
+                        onPrimary: Colors.white,
+                        surface: Colors.white,
+                        onSurface: Colors.black,
+                      ),
+                      dialogBackgroundColor: Colors.white,
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (pickedDate != null) {
+                setState(() {
+                  _selectedDate = pickedDate;
+                });
+              }
+            },
+            controller: TextEditingController(
+              text:
+                  '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
+            ),
+          ),
+        ],
+      );
+    }
   }
 
   Widget _buildSetEndDateCheckbox() {
@@ -358,6 +506,33 @@ class _AddReminderState extends State<AddReminder> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildNoteField() {
+    return TextFormField(
+      maxLines: 3,
+      decoration: InputDecoration(
+        labelText: 'Note',
+        labelStyle: TextStyle(color: PetRecordColor.theme),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: PetRecordColor.theme),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: BorderSide(color: PetRecordColor.focusColor),
+        ),
+      ),
+      onChanged: (value) {
+        // Handle note input
+        setState(() {
+          _note = value;
+        });
+      },
     );
   }
 

@@ -4,6 +4,7 @@ import 'package:petcare_record/pages/addEvent/add_new.dart';
 import 'package:petcare_record/pages/myPets/event_tab.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:intl/intl.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class PetDetailPage extends StatelessWidget {
   final Pet pet;
@@ -91,7 +92,6 @@ class PetDetailPage extends StatelessWidget {
                 String refresh = await Navigator.push(context,
                     MaterialPageRoute(builder: (context) => AddNew(pet: pet)));
                 // if (refresh == 'refresh') {
-                //
                 //   refreshPetsData();
                 // }
               },
@@ -244,9 +244,31 @@ class PetDetailPage extends StatelessWidget {
               ),
             ),
             //SizedBox(height: 5),
-            Container(
-              height: MediaQuery.of(context).size.height,
-              child: EventTab(),
+            LayoutBuilder(
+              builder: (BuildContext context, BoxConstraints constraints) {
+                // Define the estimated height per item and the number of items
+                double itemHeight = 100.0; // Example height for each item
+                int itemCount = 8; // Replace with actual item count
+
+                // Calculate the content height based on the item count and item height
+                double contentHeight = itemCount * itemHeight;
+
+                // Ensure the container does not go below the minimum height or above the screen height
+                double minHeight = 50.0;
+                double maxHeight = constraints.maxHeight;
+
+                // Set the container height
+                double containerHeight = contentHeight < minHeight
+                    ? minHeight
+                    : contentHeight > maxHeight
+                        ? maxHeight
+                        : contentHeight;
+
+                return Container(
+                  height: containerHeight,
+                  child: EventTab(petId: pet.id),
+                );
+              },
             ),
           ],
         ),
