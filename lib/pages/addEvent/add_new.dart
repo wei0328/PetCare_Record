@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/pages/addEvent/add_event.dart';
 import 'package:petcare_record/pages/addEvent/add_reminder.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 
@@ -30,7 +31,7 @@ class AddNew extends StatelessWidget {
               children: [
                 _buildOptionCard(
                   context,
-                  icon: Icons.calendar_today,
+                  icon: Icons.alarm,
                   text: 'Add a Reminder',
                   onTap: () {
                     Navigator.push(
@@ -43,10 +44,14 @@ class AddNew extends StatelessWidget {
                 SizedBox(height: 46),
                 _buildOptionCard(
                   context,
-                  icon: Icons.note,
+                  icon: Icons.edit_calendar_outlined,
                   text: 'Add an Event',
                   onTap: () {
-                    // Handle onTap
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => AddEvent(pet: pet)),
+                    );
                   },
                 ),
               ],
