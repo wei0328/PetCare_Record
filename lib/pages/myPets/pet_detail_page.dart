@@ -247,10 +247,9 @@ class PetDetailPage extends StatelessWidget {
             LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 // Define the estimated height per item and the number of items
-                double itemHeight = 100.0; // Example height for each item
-                int itemCount = 8; // Replace with actual item count
+                double itemHeight = 100.0;
+                int itemCount = 8;
 
-                // Calculate the content height based on the item count and item height
                 double contentHeight = itemCount * itemHeight;
 
                 // Ensure the container does not go below the minimum height or above the screen height
