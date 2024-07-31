@@ -9,8 +9,8 @@ class EventTab extends StatelessWidget {
       child: Column(
         children: [
           TabBar(
-            indicatorColor: Colors.green,
-            labelColor: Colors.green,
+            indicatorColor: PetRecordColor.theme,
+            labelColor: PetRecordColor.theme,
             unselectedLabelColor: Colors.grey,
             labelStyle: TextStyle(fontWeight: FontWeight.bold),
             tabs: [
