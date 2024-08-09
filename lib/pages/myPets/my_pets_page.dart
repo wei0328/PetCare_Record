@@ -278,7 +278,10 @@ class _MyPetsPageState extends State<MyPetsPage> {
         padding: const EdgeInsets.all(10.0),
         child: Center(
           child: isLoading
-              ? CircularProgressIndicator()
+              ? CircularProgressIndicator(
+                  valueColor:
+                      AlwaysStoppedAnimation<Color>(PetRecordColor.theme),
+                )
               : pets.isEmpty
                   ? Center(
                       child: GestureDetector(
