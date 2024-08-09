@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:intl/intl.dart';
@@ -42,7 +43,9 @@ class EventTab extends StatelessWidget {
   Widget _buildEventsTab() {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
-          .collection('Events')
+          .collection('Events And Reminders')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .collection('PetEvents')
           .doc(petId)
           .snapshots(),
       builder: (context, snapshot) {
@@ -51,12 +54,12 @@ class EventTab extends StatelessWidget {
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return Center(child: Text('No Events'));
+          return Column(children: [SizedBox(height: 40), Text('No Events')]);
         }
 
         var eventData = snapshot.data!.data();
         if (eventData == null || eventData.isEmpty) {
-          return Center(child: Text('No Events'));
+          return Column(children: [SizedBox(height: 40), Text('No Events')]);
         }
 
         var events = eventData['events'] as List<dynamic>;
@@ -180,7 +183,9 @@ class EventTab extends StatelessWidget {
   Widget _buildNotificationsTab() {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
-          .collection('Reminders')
+          .collection('Events And Reminders')
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .collection('PetReminders')
           .doc(petId)
           .snapshots(),
       builder: (context, snapshot) {
@@ -189,12 +194,14 @@ class EventTab extends StatelessWidget {
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return Center(child: Text('No Notifications'));
+          return Column(
+              children: [SizedBox(height: 40), Text('No Notifications')]);
         }
 
         var reminderData = snapshot.data!.data();
         if (reminderData == null || reminderData.isEmpty) {
-          return Center(child: Text('No Notifications'));
+          return Column(
+              children: [SizedBox(height: 40), Text('No Notifications')]);
         }
 
         var reminders = reminderData['reminders'] as List<dynamic>;
@@ -203,7 +210,11 @@ class EventTab extends StatelessWidget {
           itemCount: reminders.length,
           itemBuilder: (context, index) {
             var reminder = reminders[index] as Map<String, dynamic>;
-            var dateTime = (reminder['dateTime'] as Timestamp).toDate();
+
+            Timestamp? timestamp = reminder['dateTime'] as Timestamp?;
+            DateTime dateTime =
+                timestamp != null ? timestamp.toDate() : DateTime.now();
+
             var formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
             var formattedTime =
                 reminder['time'] ?? DateFormat('hh:mm a').format(dateTime);
@@ -211,7 +222,6 @@ class EventTab extends StatelessWidget {
             var isOnce = reminder['isOnce'] as bool;
 
             String subtitleText;
-            String noteIcon;
             if (isOnce) {
               subtitleText = '$formattedDate  $formattedTime';
             } else {
@@ -220,15 +230,11 @@ class EventTab extends StatelessWidget {
               subtitleText = 'Every $frequencyNumber $frequencyUnit';
             }
 
-            if (note.isNotEmpty) {
-              //subtitleText += '\nNote: $note';
-            }
-
             return IntrinsicHeight(
-                child: ListTile(
-              contentPadding:
-                  EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-              title: Row(
+              child: ListTile(
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                title: Row(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Container(
@@ -288,13 +294,15 @@ class EventTab extends StatelessWidget {
                                       fontWeight: FontWeight.w500),
                                 ),
                               ],
-                            ),
+                            )
                           ]
                         ],
                       ),
                     )
-                  ]),
-            ));
+                  ],
+                ),
+              ),
+            );
           },
         );
       },

@@ -91,9 +91,6 @@ class PetDetailPage extends StatelessWidget {
               onPressed: () async {
                 String refresh = await Navigator.push(context,
                     MaterialPageRoute(builder: (context) => AddNew(pet: pet)));
-                // if (refresh == 'refresh') {
-                //   refreshPetsData();
-                // }
               },
             ),
           )
@@ -246,25 +243,13 @@ class PetDetailPage extends StatelessWidget {
             //SizedBox(height: 5),
             LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
-                // Define the estimated height per item and the number of items
-                double itemHeight = 100.0;
-                int itemCount = 8;
+                final double appBarHeight = AppBar().preferredSize.height;
 
-                double contentHeight = itemCount * itemHeight;
-
-                // Ensure the container does not go below the minimum height or above the screen height
-                double minHeight = 50.0;
-                double maxHeight = constraints.maxHeight;
-
-                // Set the container height
-                double containerHeight = contentHeight < minHeight
-                    ? minHeight
-                    : contentHeight > maxHeight
-                        ? maxHeight
-                        : contentHeight;
+                final double screenHeight = MediaQuery.of(context).size.height;
+                final double availableHeight = screenHeight - appBarHeight - 60;
 
                 return Container(
-                  height: containerHeight,
+                  height: availableHeight,
                   child: EventTab(petId: pet.id),
                 );
               },

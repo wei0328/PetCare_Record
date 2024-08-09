@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:image_picker/image_picker.dart';
@@ -105,8 +106,13 @@ class _AddEventState extends State<AddEvent> {
           break;
       }
 
-      DocumentReference eventDocRef =
-          FirebaseFirestore.instance.collection('Events').doc(widget.pet.id);
+      var user = FirebaseAuth.instance.currentUser;
+      if (user == null) return;
+      DocumentReference eventDocRef = FirebaseFirestore.instance
+          .collection('Events And Reminders')
+          .doc(user.uid)
+          .collection('PetEvents')
+          .doc(widget.pet.id);
 
       DocumentSnapshot eventDocSnapshot = await eventDocRef.get();
       if (!eventDocSnapshot.exists) {

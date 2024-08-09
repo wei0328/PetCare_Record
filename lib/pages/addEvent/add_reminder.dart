@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petcare_record/globalclass/color.dart';
@@ -25,59 +26,69 @@ class _AddReminderState extends State<AddReminder> {
   String _note = '';
 
   Future<void> saveReminder() async {
-    if (_selectedReminderType == null || _selectedReminderType!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reminder type is required.')),
-      );
-      return;
-    }
+    var user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
 
-    if (_selectedDate == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Start date is required.')),
-      );
-      return;
-    }
+    DocumentReference remindersRef = FirebaseFirestore.instance
+        .collection('Events And Reminders')
+        .doc(user.uid)
+        .collection('PetReminders')
+        .doc(widget.pet.id);
 
-    try {
-      Map<String, dynamic> reminderData = {
-        'type': _selectedReminderType,
-        'isOnce': _isOnce,
-        'dateTime': _selectedDate,
-        'time': _selectedTime.format(context),
-        'frequencyNumber': _frequencyNumber,
-        'frequencyUnit': _frequencyUnit,
-        'startDate': _selectedDate,
-        'endDate': _selectedEndDate,
-        'note': _note,
-      };
+    Map<String, dynamic> reminderData = {
+      'type': _selectedReminderType,
+      'isOnce': _isOnce,
+      'startDate': _selectedDate,
+      'time': _selectedTime.format(context),
+      'note': _note,
+    };
 
-      DocumentReference petDocRef =
-          FirebaseFirestore.instance.collection('Reminders').doc(widget.pet.id);
+    if (_isOnce) {
+      DateTime notificationTime = _selectedDate.subtract(Duration(hours: 2));
+      reminderData['notificationTimes'] = [notificationTime];
+    } else {
+      List<DateTime> notificationTimes = [];
+      DateTime currentDate = _selectedDate;
 
-      DocumentSnapshot petDocSnapshot = await petDocRef.get();
-      if (!petDocSnapshot.exists) {
-        await petDocRef.set({'reminders': []});
+      DateTime endDate =
+          _selectedEndDate ?? _selectedDate.add(Duration(days: 2000));
+
+      while (currentDate.isBefore(endDate)) {
+        notificationTimes.add(currentDate);
+
+        switch (_frequencyUnit) {
+          case 'Day':
+            currentDate = currentDate.add(Duration(days: _frequencyNumber));
+            break;
+          case 'Week':
+            currentDate = currentDate.add(Duration(days: 7 * _frequencyNumber));
+            break;
+          case 'Month':
+            currentDate = DateTime(currentDate.year,
+                currentDate.month + _frequencyNumber, currentDate.day);
+            break;
+          case 'Year':
+            currentDate = DateTime(currentDate.year + _frequencyNumber,
+                currentDate.month, currentDate.day);
+            break;
+        }
       }
 
-      await petDocRef.update({
-        'reminders': FieldValue.arrayUnion([reminderData]),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Reminder saved successfully!')),
-      );
-
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => PetDetailPage(pet: widget.pet)),
-        (Route<dynamic> route) => route.isFirst,
-      );
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to save reminder: $e')),
-      );
+      reminderData['notificationTimes'] = notificationTimes;
     }
+
+    await remindersRef.set({
+      'reminders': FieldValue.arrayUnion([reminderData])
+    }, SetOptions(merge: true));
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Reminder saved successfully!')),
+    );
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => PetDetailPage(pet: widget.pet)),
+      (Route<dynamic> route) => route.isFirst,
+    );
   }
 
   @override
