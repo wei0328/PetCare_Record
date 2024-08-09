@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/auth/login.dart';
-import 'package:petcare_record/pages/diary_page.dart';
+import 'package:petcare_record/pages/dairy/diary_page.dart';
 import 'package:petcare_record/pages/setting/setting_page.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:petcare_record/pages/map_page.dart';
@@ -55,7 +55,7 @@ class _MyHomePageState extends State<MyHomePage> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          //DiaryPage(),
+          DiaryPage(),
           MyPetsPage(),
           SettingPage(),
         ],
