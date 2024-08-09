@@ -41,6 +41,7 @@ class _AddReminderState extends State<AddReminder> {
       'startDate': _selectedDate,
       'time': _selectedTime.format(context),
       'note': _note,
+      'petName': widget.pet.name,
     };
 
     if (_isOnce) {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/pages/dairy/daily_event_tab.dart';
 import 'package:table_calendar/table_calendar.dart';
 
 class DiaryPage extends StatefulWidget {
@@ -83,16 +84,12 @@ class _DiaryPageState extends State<DiaryPage> {
                 ),
               ),
             ),
+            SizedBox(
+              height: 10,
+            ),
             Expanded(
-              child: Center(
-                child: Text(
-                  'Selected Date: ${_selectedDay!.toString().split(' ')[0]}',
-                  style: TextStyle(
-                    fontSize: 22,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+              child: DailyEventTab(
+                selectedDate: _selectedDay ?? DateTime.now(),
               ),
             ),
           ],

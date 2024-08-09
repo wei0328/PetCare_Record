@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:petcare_record/globalclass/color.dart';
 import 'package:intl/intl.dart';
+import 'package:petcare_record/globalclass/color.dart';
 
-class EventTab extends StatelessWidget {
-  final String petId;
+class DailyEventTab extends StatelessWidget {
+  final DateTime selectedDate;
 
-  EventTab({required this.petId});
+  DailyEventTab({required this.selectedDate});
 
   @override
   Widget build(BuildContext context) {
@@ -41,37 +41,56 @@ class EventTab extends StatelessWidget {
   }
 
   Widget _buildEventsTab() {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('Events And Reminders')
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .collection('PetEvents')
-          .doc(petId)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || !snapshot.data!.exists) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Column(children: [SizedBox(height: 40), Text('No Events')]);
         }
 
-        var eventData = snapshot.data!.data();
-        if (eventData == null || eventData.isEmpty) {
+        List<Map<String, dynamic>> allEvents = [];
+
+        for (var doc in snapshot.data!.docs) {
+          var eventData = doc.data();
+          if (eventData.containsKey('events')) {
+            var events = eventData['events'] as List<dynamic>;
+
+            List<Map<String, dynamic>> filteredEvents = events
+                .where((event) {
+                  DateTime eventDate =
+                      (event['eventDate'] as Timestamp).toDate();
+                  return eventDate.year == selectedDate.year &&
+                      eventDate.month == selectedDate.month &&
+                      eventDate.day == selectedDate.day;
+                })
+                .map((event) => event as Map<String, dynamic>)
+                .toList();
+
+            allEvents.addAll(filteredEvents);
+          }
+        }
+
+        if (allEvents.isEmpty) {
           return Column(children: [SizedBox(height: 40), Text('No Events')]);
         }
 
-        var events = eventData['events'] as List<dynamic>;
         return ListView.builder(
-          itemCount: events.length,
+          itemCount: allEvents.length,
           itemBuilder: (context, index) {
-            var event = events[index] as Map<String, dynamic>;
+            var event = allEvents[index];
+            var petName = event['petName'] ?? '';
+            var eventType = event['type'] ?? 'No title';
+            var memo = event['memo'] ?? '';
             var date = (event['eventDate'] as Timestamp).toDate();
             var formattedDate = DateFormat('yyyy-MM-dd').format(date);
-            var memo = event['memo'] ?? '';
-            var eventType = event['type'] ?? 'No title';
-            var isPictureEvent = eventType == 'Picture';
 
             String rightSideText = '';
             Color indicatorColor = Colors.grey;
@@ -105,17 +124,16 @@ class EventTab extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(eventType,
+                          Text(petName,
                               style: TextStyle(
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.bold,
                                   color: Colors.grey[800])),
                           SizedBox(height: 5),
                           Text(
-                            formattedDate,
+                            eventType,
                             style: TextStyle(
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14),
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[600]),
                           ),
                           if (memo.isNotEmpty) ...[
                             SizedBox(height: 5),
@@ -127,9 +145,8 @@ class EventTab extends StatelessWidget {
                                 Text(
                                   memo,
                                   style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500),
                                 ),
                               ],
                             ),
@@ -137,7 +154,7 @@ class EventTab extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (isPictureEvent)
+                    if (eventType == 'Picture')
                       Container(
                         width: 50,
                         height: 50,
@@ -166,9 +183,9 @@ class EventTab extends StatelessWidget {
                           child: Text(
                             rightSideText,
                             style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: PetRecordColor.theme,
-                                fontSize: 16),
+                              fontWeight: FontWeight.bold,
+                              color: PetRecordColor.theme,
+                            ),
                           ),
                         ),
                       ),
@@ -183,53 +200,69 @@ class EventTab extends StatelessWidget {
   }
 
   Widget _buildNotificationsTab() {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+    return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('Events And Reminders')
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .collection('PetReminders')
-          .doc(petId)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return Center(child: CircularProgressIndicator());
         }
 
-        if (!snapshot.hasData || !snapshot.data!.exists) {
+        if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
           return Column(
               children: [SizedBox(height: 40), Text('No Notifications')]);
         }
 
-        var reminderData = snapshot.data!.data();
-        if (reminderData == null || reminderData.isEmpty) {
+        List<Map<String, dynamic>> allReminders = [];
+
+        for (var doc in snapshot.data!.docs) {
+          var reminderData = doc.data();
+          if (reminderData.containsKey('reminders')) {
+            var reminders = reminderData['reminders'] as List<dynamic>;
+
+            for (var reminder in reminders) {
+              var notificationTimes =
+                  reminder['notificationTimes'] as List<dynamic>;
+
+              for (var notificationTime in notificationTimes) {
+                DateTime reminderDate =
+                    (notificationTime as Timestamp).toDate();
+                if (reminderDate.year == selectedDate.year &&
+                    reminderDate.month == selectedDate.month &&
+                    reminderDate.day == selectedDate.day) {
+                  allReminders.add(reminder);
+                }
+              }
+            }
+          }
+        }
+
+        if (allReminders.isEmpty) {
           return Column(
               children: [SizedBox(height: 40), Text('No Notifications')]);
         }
-
-        var reminders = reminderData['reminders'] as List<dynamic>;
 
         return ListView.builder(
-          itemCount: reminders.length,
+          itemCount: allReminders.length,
           itemBuilder: (context, index) {
-            var reminder = reminders[index] as Map<String, dynamic>;
-
-            Timestamp? timestamp = reminder['dateTime'] as Timestamp?;
-            DateTime dateTime =
-                timestamp != null ? timestamp.toDate() : DateTime.now();
-
-            var formattedDate = DateFormat('yyyy-MM-dd').format(dateTime);
-            var formattedTime =
-                reminder['time'] ?? DateFormat('hh:mm a').format(dateTime);
+            var reminder = allReminders[index];
             var note = reminder['note'] ?? '';
             var isOnce = reminder['isOnce'] as bool;
+            var petName = reminder['petName'] ?? 'Unknown Pet';
+            var type = reminder['type'] ?? 'No type';
+            var date =
+                (reminder['notificationTimes'][index] as Timestamp).toDate();
+            var formattedDate = DateFormat('yyyy-MM-dd').format(date);
 
             String subtitleText;
             if (isOnce) {
-              subtitleText = '$formattedDate  $formattedTime';
+              var time = reminder['time'] ?? '';
+              subtitleText = '$time';
             } else {
-              var frequencyNumber = reminder['frequencyNumber'] ?? 1;
-              var frequencyUnit = reminder['frequencyUnit'] ?? 'Day';
-              subtitleText = 'Every $frequencyNumber $frequencyUnit';
+              subtitleText = 'Repeated Notification';
             }
 
             return IntrinsicHeight(
@@ -248,7 +281,7 @@ class EventTab extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(reminder['type'] ?? 'No title',
+                          Text(petName,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey[800])),
@@ -256,6 +289,15 @@ class EventTab extends StatelessWidget {
                             SizedBox(height: 5),
                             Row(
                               children: [
+                                Expanded(
+                                  child: Text(
+                                    type,
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
                                 Icon(Icons.alarm, size: 20, color: Colors.grey),
                                 SizedBox(width: 5),
                                 Text(
@@ -271,15 +313,14 @@ class EventTab extends StatelessWidget {
                             SizedBox(height: 5),
                             Row(
                               children: [
-                                Icon(Icons.loop_sharp,
-                                    size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  subtitleText,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
+                                Expanded(
+                                  child: Text(
+                                    type,
+                                    style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
                                 ),
                               ],
                             ),

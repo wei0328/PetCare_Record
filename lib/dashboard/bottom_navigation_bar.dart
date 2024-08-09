@@ -43,6 +43,12 @@ class _BottomNavigationBarWidgetState extends State<BottomNavigationBarWidget> {
       unselectedItemColor: PetRecordColor.iconcolor,
       backgroundColor: PetRecordColor.white,
       onTap: widget.onItemSelected,
+      selectedLabelStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+      ),
+      unselectedLabelStyle: TextStyle(
+        fontWeight: FontWeight.w600,
+      ),
     );
   }
 }

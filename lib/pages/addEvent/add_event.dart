@@ -85,6 +85,7 @@ class _AddEventState extends State<AddEvent> {
         'type': _selectedRecordType,
         'eventDate': _eventDate,
         'memo': _memo,
+        'petName': widget.pet.name,
       };
 
       switch (_selectedRecordType) {
