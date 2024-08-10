@@ -13,6 +13,98 @@ class EventTab extends StatelessWidget {
 
   const EventTab({Key? key, required this.pet}) : super(key: key);
 
+  Future<void> _confirmDeleteEvent(
+      BuildContext context, Map<String, dynamic> event) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Event'),
+          content: Text('Are you sure you want to delete this event?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                var user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  DocumentReference eventDocRef = FirebaseFirestore.instance
+                      .collection('Events And Reminders')
+                      .doc(user.uid)
+                      .collection('PetEvents')
+                      .doc(pet.id);
+
+                  await eventDocRef.update({
+                    'events': FieldValue.arrayRemove([event])
+                  });
+
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Delete'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red[900],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _confirmDeleteReminder(
+      BuildContext context, Map<String, dynamic> reminder) async {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Delete Notification'),
+          content: Text('Are you sure you want to delete this notification?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.grey,
+              ),
+            ),
+            TextButton(
+              onPressed: () async {
+                var user = FirebaseAuth.instance.currentUser;
+                if (user != null) {
+                  DocumentReference reminderDocRef = FirebaseFirestore.instance
+                      .collection('Events And Reminders')
+                      .doc(user.uid)
+                      .collection('PetReminders')
+                      .doc(pet.id);
+
+                  await reminderDocRef.update({
+                    'reminders': FieldValue.arrayRemove([reminder])
+                  });
+
+                  Navigator.of(context).pop();
+                }
+              },
+              child: Text('Delete'),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.red[900],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
@@ -56,15 +148,24 @@ class EventTab extends StatelessWidget {
         }
 
         if (!snapshot.hasData || !snapshot.data!.exists) {
-          return Column(children: [SizedBox(height: 40), Text('No Events')]);
+          return Column(
+            children: [SizedBox(height: 40), Text('No Events')],
+          );
         }
 
         var eventData = snapshot.data!.data();
-        if (eventData == null || eventData.isEmpty) {
-          return Column(children: [SizedBox(height: 40), Text('No Events')]);
+
+        // Check if eventData or events are null or empty
+        if (eventData == null ||
+            eventData['events'] == null ||
+            eventData['events'].isEmpty) {
+          return Column(
+            children: [SizedBox(height: 40), Text('No Events')],
+          );
         }
 
         var events = eventData['events'] as List<dynamic>;
+
         return ListView.builder(
           itemCount: events.length,
           itemBuilder: (context, index) {
@@ -174,6 +275,13 @@ class EventTab extends StatelessWidget {
                             ),
                           ),
                         ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.delete,
+                          color: Colors.grey,
+                        ),
+                        onPressed: () => _confirmDeleteEvent(context, event),
+                      ),
                     ],
                   ),
                   onTap: () {
@@ -220,6 +328,31 @@ class EventTab extends StatelessWidget {
 
         var reminders = reminderData['reminders'] as List<dynamic>;
 
+        var now = DateTime.now();
+        reminders = reminders.where((reminder) {
+          DateTime startDate = (reminder['startDate'] as Timestamp).toDate();
+          DateTime? endDate;
+          if (reminder['endDate'] != null) {
+            endDate = (reminder['endDate'] as Timestamp).toDate();
+          }
+
+          // For recurring events without an end date, always show
+          if (!reminder['isOnce'] && endDate == null) {
+            return true;
+          }
+
+          // Show reminders that have not ended
+          return startDate.isAfter(now) ||
+              (endDate != null && endDate.isAfter(now));
+        }).toList();
+
+        if (reminders.isEmpty) {
+          return Column(children: [
+            SizedBox(height: 40),
+            Text('No Upcoming Notifications')
+          ]);
+        }
+
         return ListView.builder(
           itemCount: reminders.length,
           itemBuilder: (context, index) {
@@ -246,89 +379,95 @@ class EventTab extends StatelessWidget {
 
             return IntrinsicHeight(
               child: ListTile(
-                  contentPadding:
-                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-                  title: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Container(
-                        width: 6,
-                        color: Colors.grey[300],
-                      ),
-                      SizedBox(width: 8),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(reminder['type'] ?? 'No title',
-                                style: TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[800])),
-                            if (isOnce) ...[
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Icon(Icons.alarm,
-                                      size: 20, color: Colors.grey),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    subtitleText,
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            ] else ...[
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Icon(Icons.loop_sharp,
-                                      size: 20, color: Colors.grey),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    subtitleText,
-                                    style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 14),
-                                  ),
-                                ],
-                              ),
-                            ],
-                            if (note.isNotEmpty) ...[
-                              SizedBox(height: 5),
-                              Row(
-                                children: [
-                                  Icon(Icons.edit_document,
-                                      size: 20, color: Colors.grey),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    note,
-                                    style: TextStyle(
-                                        color: Colors.grey[700],
-                                        fontWeight: FontWeight.w500),
-                                  ),
-                                ],
-                              )
-                            ]
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                title: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      width: 6,
+                      color: Colors.grey[300],
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(reminder['type'] ?? 'No title',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[800])),
+                          if (isOnce) ...[
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Icon(Icons.alarm, size: 20, color: Colors.grey),
+                                SizedBox(width: 5),
+                                Text(
+                                  subtitleText,
+                                  style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          ] else ...[
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Icon(Icons.loop_sharp,
+                                    size: 20, color: Colors.grey),
+                                SizedBox(width: 5),
+                                Text(
+                                  subtitleText,
+                                  style: TextStyle(
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14),
+                                ),
+                              ],
+                            ),
                           ],
-                        ),
-                      )
-                    ],
-                  ),
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Reminder(
-                          pet: pet,
-                          existingReminder: reminder,
-                        ),
+                          if (note.isNotEmpty) ...[
+                            SizedBox(height: 5),
+                            Row(
+                              children: [
+                                Icon(Icons.edit_document,
+                                    size: 20, color: Colors.grey),
+                                SizedBox(width: 5),
+                                Text(
+                                  note,
+                                  style: TextStyle(
+                                      color: Colors.grey[700],
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ],
+                            )
+                          ]
+                        ],
                       ),
-                    );
-                  }),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.grey),
+                      onPressed: () {
+                        _confirmDeleteReminder(context, reminder);
+                      },
+                    ),
+                  ],
+                ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => Reminder(
+                        pet: pet,
+                        existingReminder: reminder,
+                      ),
+                    ),
+                  );
+                },
+              ),
             );
           },
         );
