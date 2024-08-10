@@ -247,32 +247,6 @@ class _SettingPageState extends State<SettingPage> {
                   ),
                   Divider(),
                   ListTile(
-                    leading: Icon(Icons.settings),
-                    title: Text(
-                      'Preferences',
-                      style: TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    onTap: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(20.0),
-                              topRight: Radius.circular(20.0),
-                            ),
-                            child: FractionallySizedBox(
-                              heightFactor: 0.75,
-                              child: PreferencesPage(),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  Divider(),
-                  ListTile(
                     leading: Icon(Icons.notifications),
                     title: Text(
                       'Notification',
