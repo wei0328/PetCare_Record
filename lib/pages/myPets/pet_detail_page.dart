@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/pages/addEvent/add_new.dart';
 import 'package:petcare_record/pages/myPets/event_tab.dart';
-import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:intl/intl.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 
 class PetDetailPage extends StatelessWidget {
   final Pet pet;
@@ -86,7 +85,6 @@ class PetDetailPage extends StatelessWidget {
                 Icons.add,
                 color: PetRecordColor.white,
                 size: 30,
-                weight: 600,
               ),
               onPressed: () async {
                 String refresh = await Navigator.push(context,
@@ -240,7 +238,6 @@ class PetDetailPage extends StatelessWidget {
                 ),
               ),
             ),
-            //SizedBox(height: 5),
             LayoutBuilder(
               builder: (BuildContext context, BoxConstraints constraints) {
                 final double appBarHeight = AppBar().preferredSize.height;
@@ -250,7 +247,9 @@ class PetDetailPage extends StatelessWidget {
 
                 return Container(
                   height: availableHeight,
-                  child: EventTab(petId: pet.id),
+                  child: EventTab(
+                    pet: pet,
+                  ),
                 );
               },
             ),

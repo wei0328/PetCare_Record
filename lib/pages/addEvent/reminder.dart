@@ -3,27 +3,81 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:petcare_record/globalclass/color.dart';
-import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:petcare_record/pages/myPets/pet_detail_page.dart';
+import 'package:petcare_record/pages/myPets/my_pets_page.dart';
+import 'package:uuid/uuid.dart';
 
-class AddReminder extends StatefulWidget {
+class Reminder extends StatefulWidget {
   final Pet pet;
+  final Map<String, dynamic>? existingReminder;
 
-  AddReminder({required this.pet});
+  Reminder({required this.pet, this.existingReminder});
   @override
-  _AddReminderState createState() => _AddReminderState();
+  _ReminderState createState() => _ReminderState();
 }
 
-class _AddReminderState extends State<AddReminder> {
+class _ReminderState extends State<Reminder> {
   String? _selectedReminderType;
   bool _isOnce = true;
   bool _setEndDate = false;
-  DateTime _selectedDate = DateTime.now();
+  DateTime _selectedStartDate = DateTime.now();
   TimeOfDay _selectedTime = TimeOfDay.now();
   DateTime? _selectedEndDate;
   int _frequencyNumber = 1;
   String _frequencyUnit = 'Day';
   String _note = '';
+  late String reminderId;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingReminder != null) {
+      reminderId = widget.existingReminder!['reminderId'];
+      _selectedReminderType = widget.existingReminder!['type'];
+      _isOnce = widget.existingReminder!['isOnce'];
+
+      if (widget.existingReminder!['startDate'] is Timestamp) {
+        _selectedStartDate =
+            (widget.existingReminder!['startDate'] as Timestamp).toDate();
+      } else if (widget.existingReminder!['startDate'] is DateTime) {
+        _selectedStartDate = widget.existingReminder!['startDate'];
+      }
+
+      if (widget.existingReminder!['time'] is String) {
+        final timeParts = widget.existingReminder!['time'].split(" ");
+        final timeOfDayParts = timeParts[0].split(":");
+        int hour = int.parse(timeOfDayParts[0]);
+        final minute = int.parse(timeOfDayParts[1]);
+        final period = timeParts[1] == "AM" ? DayPeriod.am : DayPeriod.pm;
+        if (timeParts[1] == "PM" && hour != 12) {
+          hour += 12;
+        } else if (timeParts[1] == "AM" && hour == 12) {
+          hour = 0;
+        }
+
+        _selectedTime = TimeOfDay(hour: hour, minute: minute);
+      }
+
+      _note = widget.existingReminder!['note'];
+
+      if (widget.existingReminder!['endDate'] != null) {
+        _setEndDate = true;
+        if (widget.existingReminder!['endDate'] is Timestamp) {
+          _selectedEndDate =
+              (widget.existingReminder!['endDate'] as Timestamp).toDate();
+        } else if (widget.existingReminder!['endDate'] is DateTime) {
+          _selectedEndDate = widget.existingReminder!['endDate'];
+        }
+      }
+
+      if (!_isOnce) {
+        _frequencyNumber = widget.existingReminder!['frequencyNumber'];
+        _frequencyUnit = widget.existingReminder!['frequencyUnit'];
+      }
+    } else {
+      reminderId = Uuid().v4();
+    }
+  }
 
   Future<void> saveReminder() async {
     var user = FirebaseAuth.instance.currentUser;
@@ -36,41 +90,51 @@ class _AddReminderState extends State<AddReminder> {
         .doc(widget.pet.id);
 
     Map<String, dynamic> reminderData = {
+      'reminderId': reminderId,
       'type': _selectedReminderType,
       'isOnce': _isOnce,
-      'startDate': _selectedDate,
+      'startDate': _selectedStartDate,
       'time': _selectedTime.format(context),
       'note': _note,
       'petName': widget.pet.name,
+      'petId': widget.pet.id,
     };
 
-    if (_isOnce) {
-      DateTime notificationTime = _selectedDate.subtract(Duration(hours: 2));
+    if (_isOnce || _selectedReminderType == 'Appointment / Surgery') {
+      DateTime notificationTime = _selectedStartDate;
       reminderData['notificationTimes'] = [notificationTime];
     } else {
       List<DateTime> notificationTimes = [];
-      DateTime currentDate = _selectedDate;
+      DateTime startDate = _selectedStartDate;
 
       DateTime endDate =
-          _selectedEndDate ?? _selectedDate.add(Duration(days: 2000));
+          _selectedEndDate ?? _selectedStartDate.add(Duration(days: 2000));
 
-      while (currentDate.isBefore(endDate)) {
-        notificationTimes.add(currentDate);
+      while (startDate.isBefore(endDate)) {
+        DateTime notificationTime = DateTime(
+          startDate.year,
+          startDate.month,
+          startDate.day,
+          _selectedTime.hour,
+          _selectedTime.minute,
+        );
+
+        notificationTimes.add(notificationTime);
 
         switch (_frequencyUnit) {
           case 'Day':
-            currentDate = currentDate.add(Duration(days: _frequencyNumber));
+            startDate = startDate.add(Duration(days: _frequencyNumber));
             break;
           case 'Week':
-            currentDate = currentDate.add(Duration(days: 7 * _frequencyNumber));
+            startDate = startDate.add(Duration(days: 7 * _frequencyNumber));
             break;
           case 'Month':
-            currentDate = DateTime(currentDate.year,
-                currentDate.month + _frequencyNumber, currentDate.day);
+            startDate = DateTime(startDate.year,
+                startDate.month + _frequencyNumber, startDate.day);
             break;
           case 'Year':
-            currentDate = DateTime(currentDate.year + _frequencyNumber,
-                currentDate.month, currentDate.day);
+            startDate = DateTime(startDate.year + _frequencyNumber,
+                startDate.month, startDate.day);
             break;
         }
       }
@@ -78,9 +142,18 @@ class _AddReminderState extends State<AddReminder> {
       reminderData['notificationTimes'] = notificationTimes;
     }
 
-    await remindersRef.set({
-      'reminders': FieldValue.arrayUnion([reminderData])
-    }, SetOptions(merge: true));
+    if (widget.existingReminder != null) {
+      await remindersRef.update({
+        'reminders': FieldValue.arrayRemove([widget.existingReminder])
+      });
+      await remindersRef.update({
+        'reminders': FieldValue.arrayUnion([reminderData])
+      });
+    } else {
+      await remindersRef.set({
+        'reminders': FieldValue.arrayUnion([reminderData])
+      }, SetOptions(merge: true));
+    }
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Reminder saved successfully!')),
@@ -148,20 +221,13 @@ class _AddReminderState extends State<AddReminder> {
         });
       },
       items: <String>[
-        'Appointment',
-        'Bath',
-        'Birthday',
-        'Exercise',
-        'Food',
-        'Grooming',
+        'Appointment / Surgery',
+        'Grooming & Care',
+        'Exercise & Activity',
+        'Vaccine / Deworming',
         'Medication',
-        'Picture',
-        'Surgery',
-        'Treatment',
-        'Vaccine',
-        'Walk',
-        'Weight',
-        'Deworming',
+        'Weight Measurement',
+        'Take a Photo',
         'Other'
       ]
           .map<DropdownMenuItem<String>>(
@@ -190,8 +256,7 @@ class _AddReminderState extends State<AddReminder> {
   }
 
   bool _shouldShowFrequencySelector() {
-    return !['Appointment', 'Birthday', 'Surgery']
-        .contains(_selectedReminderType);
+    return !['Appointment / Surgery'].contains(_selectedReminderType);
   }
 
   Widget _buildFrequencySelector() {
@@ -254,7 +319,7 @@ class _AddReminderState extends State<AddReminder> {
         onTap: () async {
           DateTime? pickedDate = await showDatePicker(
             context: context,
-            initialDate: _selectedDate,
+            initialDate: _selectedStartDate,
             firstDate: DateTime.now(),
             lastDate: DateTime(2101),
             builder: (BuildContext context, Widget? child) {
@@ -293,7 +358,7 @@ class _AddReminderState extends State<AddReminder> {
 
             if (pickedTime != null) {
               setState(() {
-                _selectedDate = DateTime(
+                _selectedStartDate = DateTime(
                   pickedDate.year,
                   pickedDate.month,
                   pickedDate.day,
@@ -307,7 +372,7 @@ class _AddReminderState extends State<AddReminder> {
         },
         controller: TextEditingController(
           text:
-              '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day} ${_selectedTime.format(context)}',
+              '${_selectedStartDate.year}/${_selectedStartDate.month}/${_selectedStartDate.day} ${_selectedTime.format(context)}',
         ),
       );
     } else {
@@ -378,6 +443,50 @@ class _AddReminderState extends State<AddReminder> {
                     ),
                   ),
                 ),
+                SizedBox(width: 8),
+                Container(
+                    padding: EdgeInsets.symmetric(horizontal: 5.0),
+                    child: GestureDetector(
+                      onTap: () async {
+                        TimeOfDay? pickedTime = await showTimePicker(
+                          context: context,
+                          initialTime: _selectedTime,
+                          builder: (BuildContext context, Widget? child) {
+                            return Theme(
+                              data: ThemeData.light().copyWith(
+                                colorScheme: ColorScheme.light(
+                                  primary: PetRecordColor.theme,
+                                  onPrimary: Colors.white,
+                                  onSurface: Colors.black,
+                                ),
+                              ),
+                              child: child!,
+                            );
+                          },
+                        );
+
+                        if (pickedTime != null) {
+                          setState(() {
+                            _selectedTime = pickedTime;
+                          });
+                        }
+                      },
+                      child: Row(
+                        children: [
+                          Text(
+                            _selectedTime.format(context),
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          Icon(
+                            Icons.edit,
+                            size: 16,
+                          ),
+                        ],
+                      ),
+                    )),
               ],
             ),
           ),
@@ -407,7 +516,7 @@ class _AddReminderState extends State<AddReminder> {
             onTap: () async {
               DateTime? pickedDate = await showDatePicker(
                 context: context,
-                initialDate: _selectedDate,
+                initialDate: _selectedStartDate,
                 firstDate: DateTime.now(),
                 lastDate: DateTime(2101),
                 builder: (BuildContext context, Widget? child) {
@@ -427,13 +536,13 @@ class _AddReminderState extends State<AddReminder> {
               );
               if (pickedDate != null) {
                 setState(() {
-                  _selectedDate = pickedDate;
+                  _selectedStartDate = pickedDate;
                 });
               }
             },
             controller: TextEditingController(
               text:
-                  '${_selectedDate.year}/${_selectedDate.month}/${_selectedDate.day}',
+                  '${_selectedStartDate.year}/${_selectedStartDate.month}/${_selectedStartDate.day}',
             ),
           ),
         ],
@@ -485,8 +594,8 @@ class _AddReminderState extends State<AddReminder> {
           onTap: () async {
             DateTime? pickedEndDate = await showDatePicker(
               context: context,
-              initialDate: _selectedDate,
-              firstDate: _selectedDate,
+              initialDate: _selectedStartDate,
+              firstDate: _selectedStartDate,
               lastDate: DateTime(2101),
               builder: (BuildContext context, Widget? child) {
                 return Theme(
@@ -539,7 +648,6 @@ class _AddReminderState extends State<AddReminder> {
         ),
       ),
       onChanged: (value) {
-        // Handle note input
         setState(() {
           _note = value;
         });

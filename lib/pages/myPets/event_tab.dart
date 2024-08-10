@@ -1,15 +1,17 @@
 import 'dart:io';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
 import 'package:intl/intl.dart';
+import 'package:petcare_record/pages/addEvent/event.dart';
+import 'package:petcare_record/pages/myPets/my_pets_page.dart';
+import 'package:petcare_record/pages/addEvent/reminder.dart';
 
 class EventTab extends StatelessWidget {
-  final String petId;
+  final Pet pet;
 
-  EventTab({required this.petId});
+  const EventTab({Key? key, required this.pet}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +33,7 @@ class EventTab extends StatelessWidget {
             child: TabBarView(
               children: [
                 _buildEventsTab(),
-                _buildNotificationsTab(),
+                _buildNotificationsTab(context),
               ],
             ),
           ),
@@ -46,7 +48,7 @@ class EventTab extends StatelessWidget {
           .collection('Events And Reminders')
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .collection('PetEvents')
-          .doc(petId)
+          .doc(pet.id)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -91,90 +93,100 @@ class EventTab extends StatelessWidget {
 
             return IntrinsicHeight(
               child: ListTile(
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: 6,
-                      color: indicatorColor,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(eventType,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 6,
+                        color: indicatorColor,
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(eventType,
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800])),
+                            SizedBox(height: 5),
+                            Text(
+                              formattedDate,
+                              style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontWeight: FontWeight.w500,
+                                  fontSize: 14),
+                            ),
+                            if (memo.isNotEmpty) ...[
+                              SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.edit_document,
+                                      size: 20, color: Colors.grey),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    memo,
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      if (isPictureEvent)
+                        Container(
+                          width: 50,
+                          height: 50,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.grey[300],
+                          ),
+                          child: event['imagePath'] != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: Image.file(
+                                    File(event['imagePath']),
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Icon(Icons.image, size: 30),
+                        )
+                      else if (rightSideText.isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.all(8.0),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(10),
+                            color: Colors.transparent,
+                          ),
+                          child: Center(
+                            child: Text(
+                              rightSideText,
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800])),
-                          SizedBox(height: 5),
-                          Text(
-                            formattedDate,
-                            style: TextStyle(
-                                color: Colors.grey[600],
-                                fontWeight: FontWeight.w500,
-                                fontSize: 14),
-                          ),
-                          if (memo.isNotEmpty) ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Icon(Icons.edit_document,
-                                    size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  memo,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
-                                ),
-                              ],
+                                  color: PetRecordColor.theme,
+                                  fontSize: 16),
                             ),
-                          ],
-                        ],
-                      ),
-                    ),
-                    if (isPictureEvent)
-                      Container(
-                        width: 50,
-                        height: 50,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey[300],
-                        ),
-                        child: event['imagePath'] != null
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: Image.file(
-                                  File(event['imagePath']),
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : Icon(Icons.image, size: 30),
-                      )
-                    else if (rightSideText.isNotEmpty)
-                      Container(
-                        padding: EdgeInsets.all(8.0),
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.transparent,
-                        ),
-                        child: Center(
-                          child: Text(
-                            rightSideText,
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: PetRecordColor.theme,
-                                fontSize: 16),
                           ),
                         ),
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Event(
+                          pet: pet,
+                          existingEvent: event,
+                        ),
                       ),
-                  ],
-                ),
-              ),
+                    );
+                  }),
             );
           },
         );
@@ -182,13 +194,13 @@ class EventTab extends StatelessWidget {
     );
   }
 
-  Widget _buildNotificationsTab() {
+  Widget _buildNotificationsTab(BuildContext context) {
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
       stream: FirebaseFirestore.instance
           .collection('Events And Reminders')
           .doc(FirebaseAuth.instance.currentUser?.uid)
           .collection('PetReminders')
-          .doc(petId)
+          .doc(pet.id)
           .snapshots(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
@@ -234,78 +246,89 @@ class EventTab extends StatelessWidget {
 
             return IntrinsicHeight(
               child: ListTile(
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Container(
-                      width: 6,
-                      color: Colors.grey[300],
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(reminder['type'] ?? 'No title',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[800])),
-                          if (isOnce) ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Icon(Icons.alarm, size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  subtitleText,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ] else ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Icon(Icons.loop_sharp,
-                                    size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  subtitleText,
-                                  style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ],
-                          if (note.isNotEmpty) ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Icon(Icons.edit_document,
-                                    size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  note,
-                                  style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w500),
-                                ),
-                              ],
-                            )
-                          ]
-                        ],
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 10.0, horizontal: 16.0),
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        width: 6,
+                        color: Colors.grey[300],
                       ),
-                    )
-                  ],
-                ),
-              ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(reminder['type'] ?? 'No title',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.grey[800])),
+                            if (isOnce) ...[
+                              SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.alarm,
+                                      size: 20, color: Colors.grey),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    subtitleText,
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ] else ...[
+                              SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.loop_sharp,
+                                      size: 20, color: Colors.grey),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    subtitleText,
+                                    style: TextStyle(
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 14),
+                                  ),
+                                ],
+                              ),
+                            ],
+                            if (note.isNotEmpty) ...[
+                              SizedBox(height: 5),
+                              Row(
+                                children: [
+                                  Icon(Icons.edit_document,
+                                      size: 20, color: Colors.grey),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    note,
+                                    style: TextStyle(
+                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ],
+                              )
+                            ]
+                          ],
+                        ),
+                      )
+                    ],
+                  ),
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Reminder(
+                          pet: pet,
+                          existingReminder: reminder,
+                        ),
+                      ),
+                    );
+                  }),
             );
           },
         );

@@ -11,16 +11,18 @@ import 'package:petcare_record/globalclass/color.dart';
 import 'package:petcare_record/models/image.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 import 'package:petcare_record/pages/myPets/pet_detail_page.dart';
+import 'package:uuid/uuid.dart';
 
-class AddEvent extends StatefulWidget {
+class Event extends StatefulWidget {
   final Pet pet;
-  AddEvent({required this.pet});
+  final Map<String, dynamic>? existingEvent;
 
+  Event({required this.pet, this.existingEvent});
   @override
-  _AddEventState createState() => _AddEventState();
+  _EventState createState() => _EventState();
 }
 
-class _AddEventState extends State<AddEvent> {
+class _EventState extends State<Event> {
   String? _selectedRecordType;
   String _weight = '';
   String _temperature = '';
@@ -30,10 +32,47 @@ class _AddEventState extends State<AddEvent> {
   String _selectedTempUnit = '°C';
   DateTime _eventDate = DateTime.now();
   Uint8List? _selectedImage;
+  late String eventId;
   final TextEditingController _weightController = TextEditingController();
   final TextEditingController _tempController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _memoController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.existingEvent != null) {
+      eventId = widget.existingEvent!['eventId'];
+      _selectedRecordType = widget.existingEvent!['type'];
+
+      // Ensure eventDate is properly cast
+      _eventDate = widget.existingEvent!['eventDate'] is Timestamp
+          ? (widget.existingEvent!['eventDate'] as Timestamp).toDate()
+          : widget.existingEvent!['eventDate'];
+
+      // Handle null memo
+      _memo = widget.existingEvent!['memo'] ??
+          ''; // Provide a default value if null
+      _memoController.text = _memo; // Provide a default value if null
+      if (_selectedRecordType == 'Weight') {
+        _weight = widget.existingEvent!['weight'];
+        _selectedWeightUnit = widget.existingEvent!['weightUnit'];
+        _weightController.text = _weight; // Initialize the weight controller
+      } else if (_selectedRecordType == 'Temperature') {
+        _temperature = widget.existingEvent!['temperature'];
+        _selectedTempUnit = widget.existingEvent!['temperatureUnit'];
+        _tempController.text =
+            _temperature; // Initialize the temperature controller
+      } else if (_selectedRecordType == 'Other') {
+        _description = widget.existingEvent!['description'];
+        _descriptionController.text =
+            _description; // Initialize the description controller
+      }
+      // Handle other properties if necessary
+    } else {
+      eventId = Uuid().v4();
+    }
+  }
 
   Future<void> _pickImageAndDisplay(ImageSource source) async {
     Uint8List? imageData = await pickImage(source);
@@ -82,10 +121,12 @@ class _AddEventState extends State<AddEvent> {
 
     try {
       Map<String, dynamic> eventData = {
+        'eventId': eventId,
         'type': _selectedRecordType,
         'eventDate': _eventDate,
         'memo': _memo,
         'petName': widget.pet.name,
+        'petId': widget.pet.id
       };
 
       switch (_selectedRecordType) {
@@ -115,18 +156,18 @@ class _AddEventState extends State<AddEvent> {
           .collection('PetEvents')
           .doc(widget.pet.id);
 
-      DocumentSnapshot eventDocSnapshot = await eventDocRef.get();
-      if (!eventDocSnapshot.exists) {
-        await eventDocRef.set({'events': []});
+      if (widget.existingEvent != null) {
+        await eventDocRef.update({
+          'events': FieldValue.arrayRemove([widget.existingEvent])
+        });
+        await eventDocRef.update({
+          'events': FieldValue.arrayUnion([eventData])
+        });
+      } else {
+        await eventDocRef.set({
+          'events': FieldValue.arrayUnion([eventData])
+        }, SetOptions(merge: true));
       }
-
-      await eventDocRef.update({
-        'events': FieldValue.arrayUnion([eventData]),
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Event saved successfully!')),
-      );
 
       Navigator.pushAndRemoveUntil(
         context,

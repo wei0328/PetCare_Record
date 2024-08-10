@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:petcare_record/globalclass/color.dart';
-import 'package:petcare_record/pages/addEvent/add_event.dart';
-import 'package:petcare_record/pages/addEvent/add_reminder.dart';
+import 'package:petcare_record/pages/addEvent/event.dart';
+import 'package:petcare_record/pages/addEvent/reminder.dart';
 import 'package:petcare_record/pages/myPets/my_pets_page.dart';
 
 class AddNew extends StatelessWidget {
@@ -37,7 +37,7 @@ class AddNew extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                          builder: (context) => AddReminder(pet: pet)),
+                          builder: (context) => Reminder(pet: pet)),
                     );
                   },
                 ),
@@ -49,8 +49,7 @@ class AddNew extends StatelessWidget {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => AddEvent(pet: pet)),
+                      MaterialPageRoute(builder: (context) => Event(pet: pet)),
                     );
                   },
                 ),
