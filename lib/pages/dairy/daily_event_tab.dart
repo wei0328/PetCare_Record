@@ -1,15 +1,76 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:petcare_record/globalclass/color.dart';
+import 'package:petcare_record/models/image.dart';
+import 'package:petcare_record/pages/myPets/my_pets_page.dart';
+import 'package:petcare_record/pages/myPets/pet_detail_page.dart';
 
 class DailyEventTab extends StatelessWidget {
   final DateTime selectedDate;
 
   DailyEventTab({required this.selectedDate});
+
+  Future<Pet?> fetchSinglePetData(String petId) async {
+    var user = FirebaseAuth.instance.currentUser;
+    String documentName = user?.uid ?? '';
+    String collectionName = 'Pets';
+
+    final DocumentReference documentRef =
+        FirebaseFirestore.instance.collection(collectionName).doc(documentName);
+
+    try {
+      DocumentSnapshot documentSnapshot = await documentRef.get();
+
+      if (documentSnapshot.exists) {
+        Map<String, dynamic> data =
+            documentSnapshot.data() as Map<String, dynamic>;
+        List<dynamic> filesData = data['files'] ?? [];
+
+        for (var fileData in filesData) {
+          if (fileData['id'] == petId) {
+            String petImageName = fileData['image'] ?? '';
+            Uint8List? petImage;
+
+            if (petImageName != '') {
+              Uint8List? imageBytes =
+                  await downloadImage("petImages/$petImageName");
+              if (imageBytes != null) {
+                petImage = imageBytes;
+              }
+            }
+
+            return Pet(
+              name: fileData['name'] ?? '',
+              gender: fileData['gender'] ?? '',
+              birthday: fileData['birthday'] ?? '',
+              type: fileData['type'] ?? '',
+              weight: fileData['weight'] ?? '',
+              note: fileData['note'] ?? '',
+              petImageName: petImageName,
+              weightUnit: fileData['weightUnit'] ?? '',
+              id: fileData['id'] ?? '',
+              petImage: petImage,
+            );
+          }
+        }
+
+        // 如果未找到对应的宠物
+        print("Pet with ID $petId not found");
+        return null;
+      } else {
+        print("Document does not exist");
+        return null;
+      }
+    } catch (e) {
+      print("Error fetching pet: $e");
+      return null;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -191,6 +252,23 @@ class DailyEventTab extends StatelessWidget {
                       ),
                   ],
                 ),
+                onTap: () async {
+                  String petId = event['petId'];
+                  Pet? pet = await fetchSinglePetData(petId);
+
+                  if (pet != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PetDetailPage(pet: pet),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Pet not found')),
+                    );
+                  }
+                },
               ),
             );
           },
@@ -227,12 +305,17 @@ class DailyEventTab extends StatelessWidget {
               var notificationTimes =
                   reminder['notificationTimes'] as List<dynamic>;
 
-              for (var notificationTime in notificationTimes) {
-                DateTime reminderDate =
-                    (notificationTime as Timestamp).toDate();
-                if (reminderDate.year == selectedDate.year &&
-                    reminderDate.month == selectedDate.month &&
-                    reminderDate.day == selectedDate.day) {
+              if (notificationTimes.isNotEmpty) {
+                notificationTimes.sort((a, b) => (a as Timestamp)
+                    .toDate()
+                    .compareTo((b as Timestamp).toDate()));
+                DateTime nextNotificationDate =
+                    (notificationTimes.first as Timestamp).toDate();
+
+                if (nextNotificationDate.year == selectedDate.year &&
+                    nextNotificationDate.month == selectedDate.month &&
+                    nextNotificationDate.day == selectedDate.day) {
+                  reminder['nextNotificationTime'] = nextNotificationDate;
                   allReminders.add(reminder);
                 }
               }
@@ -253,17 +336,12 @@ class DailyEventTab extends StatelessWidget {
             var isOnce = reminder['isOnce'] as bool;
             var petName = reminder['petName'] ?? 'Unknown Pet';
             var type = reminder['type'] ?? 'No type';
-            var date =
-                (reminder['notificationTimes'][index] as Timestamp).toDate();
-            var formattedDate = DateFormat('yyyy-MM-dd').format(date);
+            var nextNotificationTime =
+                reminder['nextNotificationTime'] as DateTime?;
+            var formattedTime = DateFormat('hh:mm a')
+                .format(nextNotificationTime ?? DateTime.now());
 
-            String subtitleText;
-            if (isOnce) {
-              var time = reminder['time'] ?? '';
-              subtitleText = '$time';
-            } else {
-              subtitleText = 'Repeated Notification';
-            }
+            String subtitleText = formattedTime;
 
             return IntrinsicHeight(
               child: ListTile(
@@ -285,46 +363,29 @@ class DailyEventTab extends StatelessWidget {
                               style: TextStyle(
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey[800])),
-                          if (isOnce) ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    type,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                                Icon(Icons.alarm, size: 20, color: Colors.grey),
-                                SizedBox(width: 5),
-                                Text(
-                                  subtitleText,
+                          SizedBox(height: 5),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  type,
                                   style: TextStyle(
-                                      color: Colors.grey[600],
-                                      fontWeight: FontWeight.w500,
-                                      fontSize: 14),
-                                ),
-                              ],
-                            ),
-                          ] else ...[
-                            SizedBox(height: 5),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    type,
-                                    style: TextStyle(
-                                      color: Colors.grey[700],
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    color: Colors.grey[700],
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                              ],
-                            ),
-                          ],
+                              ),
+                              Icon(Icons.alarm, size: 20, color: Colors.grey),
+                              SizedBox(width: 5),
+                              Text(
+                                subtitleText,
+                                style: TextStyle(
+                                    color: Colors.grey[600],
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 14),
+                              ),
+                            ],
+                          ),
                           if (note.isNotEmpty) ...[
                             SizedBox(height: 5),
                             Row(
@@ -339,13 +400,30 @@ class DailyEventTab extends StatelessWidget {
                                       fontWeight: FontWeight.w500),
                                 ),
                               ],
-                            )
-                          ]
+                            ),
+                          ],
                         ],
                       ),
                     )
                   ],
                 ),
+                onTap: () async {
+                  String petId = reminder['petId'];
+                  Pet? pet = await fetchSinglePetData(petId);
+
+                  if (pet != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => PetDetailPage(pet: pet),
+                      ),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Pet not found')),
+                    );
+                  }
+                },
               ),
             );
           },
