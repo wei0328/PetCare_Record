@@ -192,7 +192,13 @@ class _EventState extends State<Event> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        backgroundColor: PetRecordColor.theme,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: PetRecordColor.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: Padding(
         padding: EdgeInsets.all(16.0),
         child: Column(

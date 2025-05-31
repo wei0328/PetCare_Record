@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:petcare_record/main.dart';
+import '../views/home/home_view.dart';
 
 class AuthController extends GetxController {
   final TextEditingController firstNameController = TextEditingController();
@@ -38,7 +38,7 @@ class AuthController extends GetxController {
           'userImage': '',
         });
 
-        Get.offAll(() => MyHomePage());
+        Get.offAll(() => HomeView());
       }
     } catch (e) {
       isLoading.value = false;
@@ -62,7 +62,7 @@ class AuthController extends GetxController {
       isLoading.value = false;
 
       if (response.user != null) {
-        Get.offAll(() => MyHomePage());
+        Get.offAll(() => HomeView());
       }
     } catch (e) {
       isLoading.value = false;

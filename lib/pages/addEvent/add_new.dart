@@ -13,13 +13,10 @@ class AddNew extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Colors.white,
-          elevation: 0,
+          backgroundColor: PetRecordColor.theme,
           leading: IconButton(
-            icon: Icon(Icons.arrow_back, color: PetRecordColor.theme),
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            icon: Icon(Icons.arrow_back, color: PetRecordColor.white),
+            onPressed: () => Navigator.of(context).pop(),
           ),
         ),
         body: Center(

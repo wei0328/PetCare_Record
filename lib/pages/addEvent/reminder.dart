@@ -32,33 +32,43 @@ class _ReminderState extends State<Reminder> {
   void initState() {
     super.initState();
     if (widget.existingReminder != null) {
-      reminderId = widget.existingReminder!['reminderId'];
+      reminderId = widget.existingReminder!['reminderId'] ?? Uuid().v4();
       _selectedReminderType = widget.existingReminder!['type'];
-      _isOnce = widget.existingReminder!['isOnce'];
+      _isOnce = widget.existingReminder!['isOnce'] ?? true;
 
-      if (widget.existingReminder!['startDate'] is Timestamp) {
-        _selectedStartDate =
-            (widget.existingReminder!['startDate'] as Timestamp).toDate();
-      } else if (widget.existingReminder!['startDate'] is DateTime) {
-        _selectedStartDate = widget.existingReminder!['startDate'];
-      }
-
-      if (widget.existingReminder!['time'] is String) {
-        final timeParts = widget.existingReminder!['time'].split(" ");
-        final timeOfDayParts = timeParts[0].split(":");
-        int hour = int.parse(timeOfDayParts[0]);
-        final minute = int.parse(timeOfDayParts[1]);
-        final period = timeParts[1] == "AM" ? DayPeriod.am : DayPeriod.pm;
-        if (timeParts[1] == "PM" && hour != 12) {
-          hour += 12;
-        } else if (timeParts[1] == "AM" && hour == 12) {
-          hour = 0;
+      if (widget.existingReminder!['startDate'] != null) {
+        if (widget.existingReminder!['startDate'] is Timestamp) {
+          _selectedStartDate =
+              (widget.existingReminder!['startDate'] as Timestamp).toDate();
+        } else if (widget.existingReminder!['startDate'] is DateTime) {
+          _selectedStartDate = widget.existingReminder!['startDate'];
         }
-
-        _selectedTime = TimeOfDay(hour: hour, minute: minute);
       }
 
-      _note = widget.existingReminder!['note'];
+      if (widget.existingReminder!['time'] != null &&
+          widget.existingReminder!['time'] is String) {
+        try {
+          final timeParts = widget.existingReminder!['time'].split(" ");
+          if (timeParts.length == 2) {
+            final timeOfDayParts = timeParts[0].split(":");
+            if (timeOfDayParts.length == 2) {
+              int hour = int.parse(timeOfDayParts[0]);
+              final minute = int.parse(timeOfDayParts[1]);
+              if (timeParts[1] == "PM" && hour != 12) {
+                hour += 12;
+              } else if (timeParts[1] == "AM" && hour == 12) {
+                hour = 0;
+              }
+              _selectedTime = TimeOfDay(hour: hour, minute: minute);
+            }
+          }
+        } catch (e) {
+          print('Error parsing time: $e');
+          _selectedTime = TimeOfDay.now();
+        }
+      }
+
+      _note = widget.existingReminder!['note'] ?? '';
 
       if (widget.existingReminder!['endDate'] != null) {
         _setEndDate = true;
@@ -71,8 +81,8 @@ class _ReminderState extends State<Reminder> {
       }
 
       if (!_isOnce) {
-        _frequencyNumber = widget.existingReminder!['frequencyNumber'];
-        _frequencyUnit = widget.existingReminder!['frequencyUnit'];
+        _frequencyNumber = widget.existingReminder!['frequencyNumber'] ?? 1;
+        _frequencyUnit = widget.existingReminder!['frequencyUnit'] ?? 'Day';
       }
     } else {
       reminderId = Uuid().v4();
@@ -169,12 +179,10 @@ class _ReminderState extends State<Reminder> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: PetRecordColor.theme,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          icon: Icon(Icons.arrow_back, color: PetRecordColor.white),
+          onPressed: () => Navigator.of(context).pop(),
         ),
       ),
       body: Padding(
