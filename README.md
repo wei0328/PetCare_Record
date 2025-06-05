@@ -23,17 +23,6 @@ A comprehensive pet care management application that helps pet owners track and 
 - User profile management
 - Personal settings and preferences
 
-### Pet Management & Health Records
-
-<div align="center">
-  <img src="screenshots/pet_detail.png" alt="Pet Profile" width="200"/>
-</div>
-
-- Comprehensive pet profiles with photos
-- Health records and medical history
-- Weight and growth tracking
-- Age and birthday management
-
 ### Event Tracking & Reminders
 
 <div align="center">
@@ -41,6 +30,10 @@ A comprehensive pet care management application that helps pet owners track and 
   <img src="screenshots/add_reminder.png" alt="Add Reminder" width="200"/>
 </div>
 
+- Comprehensive pet profiles with photos
+- Health records and medical history
+- Weight and growth tracking
+- Age and birthday management
 - Interactive calendar interface
 - Customizable reminder system
 - Multiple reminder types:
