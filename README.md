@@ -5,7 +5,6 @@ A comprehensive pet care management application that helps pet owners track and 
 ## App Preview
 
 <div align="center">
-  <img src="screenshots/auth.png" alt="Authentication" width="200"/>
   <img src="screenshots/pet_detail.png" alt="Pet Details" width="200"/>
   <img src="screenshots/calendar.png" alt="Calendar View" width="200"/>
 </div>
@@ -28,7 +27,6 @@ A comprehensive pet care management application that helps pet owners track and 
 
 <div align="center">
   <img src="screenshots/pet_detail.png" alt="Pet Profile" width="200"/>
-  <img src="screenshots/add_pet.png" alt="Add New Pet" width="200"/>
 </div>
 
 - Comprehensive pet profiles with photos
@@ -57,7 +55,6 @@ A comprehensive pet care management application that helps pet owners track and 
 
 <div align="center">
   <img src="screenshots/add_new.png" alt="Quick Actions" width="200"/>
-  <img src="screenshots/bottom_nav.png" alt="Navigation" width="200"/>
 </div>
 
 - Intuitive bottom navigation
